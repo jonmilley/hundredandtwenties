@@ -570,7 +570,7 @@ button.btn.is-text:hover {
 
   .table {
     height: auto;
-    min-height: 500px;
+    min-height: 420px;
     aspect-ratio: 1 / 1;
     padding: 8px;
     flex: none;
@@ -583,7 +583,35 @@ button.btn.is-text:hover {
     border-left: none;
     border-top: 1px solid var(--panel-stroke);
     flex: none;
-    padding-bottom: 40px; /* Space for BMC */
+    padding: 12px 12px 40px; /* Space for BMC */
+    gap: 12px;
+  }
+
+  .scoreboard {
+    gap: 6px;
+  }
+
+  .score-card {
+    padding: 6px 4px;
+  }
+
+  .score-card__value {
+    font-size: 20px;
+  }
+
+  .panel__title,
+  .action-section__title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    margin-bottom: 2px;
+  }
+
+  .log {
+    max-height: 100px;
+  }
+
+  .action-section {
+    gap: 4px;
   }
 
   .card {

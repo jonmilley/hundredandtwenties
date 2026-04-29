@@ -371,16 +371,20 @@ export class Renderer {
         const hint = el('div', '');
         hint.style.fontSize = '13px';
         hint.style.color = 'var(--muted)';
+        const handRow = el('div', 'modal__hand');
+        const bidder = state.contract.bidder;
+        const cardsToShow = state.bidOnKitty
+            ? [...state.hands[bidder], ...state.kitty]
+            : state.hands[bidder];
+        cardsToShow.forEach(c => handRow.appendChild(cardFace(c)));
         if (state.bidOnKitty) {
             hint.textContent = 'You chose Bid on the Kitty. Here are the 3 cards. Now name trump:';
-            const kittyRow = el('div', 'modal__hand');
-            state.kitty.forEach(c => kittyRow.appendChild(cardFace(c)));
-            inner.appendChild(kittyRow);
         }
         else {
             hint.textContent = `Kitty cards added to your hand (${state.kitty.length}). Choose trump, then discard at least ${state.kitty.length} — extra discards get replaced from the deck.`;
         }
         inner.appendChild(hint);
+        inner.appendChild(handRow);
         // Trump buttons
         const suitGrid = el('div', 'suit-grid');
         for (const suit of ['H', 'D', 'C', 'S']) {
@@ -407,7 +411,7 @@ export class Renderer {
         title.textContent = `Trump: ${SUIT_GLYPHS[trump]} ${SUIT_LABELS[trump]} — Select Discards`;
         inner.appendChild(title);
         const combined = [...state.hands[state.contract.bidder], ...state.kitty];
-        const minDiscard = combined.length - 5; // must discard at least kitty size (3)
+        const minDiscard = Math.max(0, combined.length - 5);
         const selected = new Set();
         const hint = el('div', '');
         hint.style.fontSize = '13px';
@@ -582,6 +586,9 @@ export class Renderer {
         <p style="margin-top:10px"><b>Bid on the Kitty:</b> Keep only 1 card from your current hand, then see the kitty and choose trump.</p>
       `;
             inner.appendChild(body);
+            const handDiv = el('div', 'modal__hand');
+            state.hands[HUMAN_SEAT].forEach(c => handDiv.appendChild(cardFace(c)));
+            inner.appendChild(handDiv);
             const row = el('div', 'button-row');
             const btn1 = el('button', 'btn is-primary');
             btn1.textContent = 'Normal';
