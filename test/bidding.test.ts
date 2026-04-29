@@ -1,9 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import { startBidding, submitBid, biddingResolution } from '../src/game/bidding';
+import { startBidding, submitBid, biddingResolution, legalBidOptions } from '../src/game/bidding';
 import { Seat } from '../src/game/state';
+import { Card } from '../src/game/cards';
 
 describe('bidding', () => {
   const dealer: Seat = 3;
+
+  it('must bid if hand has a 5 and no current bid', () => {
+    const b = startBidding(dealer);
+    const handWithFive: Card[] = [{ rank: '5', suit: 'H' }, { rank: 'K', suit: 'C' }];
+    const options = legalBidOptions(b, dealer, handWithFive);
+    expect(options).not.toContain('pass');
+    expect(options).toContain(20);
+
+    expect(() => submitBid(b, 0, 'pass', dealer, handWithFive)).toThrow('Illegal bid option');
+  });
+
+  it('can pass with a 5 if there is already a bid', () => {
+    let b = startBidding(dealer);
+    b = submitBid(b, 0, 20, dealer).state; // seat 0 bids 20
+    const handWithFive: Card[] = [{ rank: '5', suit: 'D' }];
+    const options = legalBidOptions(b, dealer, handWithFive);
+    expect(options).toContain('pass'); // legal because standing bid is 20
+    expect(() => submitBid(b, 1, 'pass', dealer, handWithFive)).not.toThrow();
+  });
 
   it('all pass -> dealer stuck with 20', () => {
     let b = startBidding(dealer);

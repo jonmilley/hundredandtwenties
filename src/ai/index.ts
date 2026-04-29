@@ -79,7 +79,7 @@ export function aiBid(state: GameState, seat: Seat): BidOption {
   const hand = state.hands[seat];
   const best = pickBestTrump(hand);
   const value = best.value;
-  const legal = legalBidOptions(state.bidding, state.dealer);
+  const legal = legalBidOptions(state.bidding, state.dealer, hand);
 
   // What can we afford to bid given the standing high?
   const standing = state.bidding.highBid;
@@ -90,6 +90,12 @@ export function aiBid(state: GameState, seat: Seat): BidOption {
   if (value >= 30) target = 30;
   else if (value >= 22) target = 25;
   else if (value >= 17) target = 20;
+
+  // Rule: if we MUST bid (because of a 5) but our target was pass,
+  // we must choose the lowest legal numeric bid.
+  if (target === 'pass' && !legal.includes('pass')) {
+    target = 20;
+  }
 
   if (target === 'pass') return 'pass';
 

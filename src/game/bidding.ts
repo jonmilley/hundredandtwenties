@@ -1,3 +1,4 @@
+import { Card } from './cards';
 import { BidAmount, BidEntry, BidOption, BiddingState, Seat, nextSeat } from './state';
 
 const MIN_BID = 20;
@@ -34,12 +35,21 @@ export function currentBidder(b: BiddingState): Seat | null {
  * can pass (accepting the dealer's take) or raise. If they raise, the dealer
  * gets another chance to take or pass.
  */
-export function legalBidOptions(b: BiddingState, dealer: Seat): BidOption[] {
+export function legalBidOptions(b: BiddingState, dealer: Seat, hand?: Card[]): BidOption[] {
   const seat = currentBidder(b);
   if (seat === null) return [];
 
-  const options: BidOption[] = ['pass'];
+  let options: BidOption[] = ['pass'];
   const isDealer = seat === dealer;
+
+  // Rule: If you have a 5 of any suit in your dealt hand, you must bid 20 or more.
+  // You can only pass if someone has already bid 20 or more.
+  if (hand && b.highBid === 0) {
+    const hasFive = hand.some(c => c.rank === '5');
+    if (hasFive) {
+      options = [];
+    }
+  }
 
   const amounts: BidAmount[] = [20, 25, 30];
   for (const amt of amounts) {
@@ -67,10 +77,11 @@ export function submitBid(
   seat: Seat,
   option: BidOption,
   dealer: Seat,
+  hand?: Card[],
 ): { state: BiddingState; resolution: BidResolution | null } {
   const expected = currentBidder(b);
   if (expected !== seat) throw new Error(`Not seat ${seat}'s turn to bid`);
-  const legal = legalBidOptions(b, dealer);
+  const legal = legalBidOptions(b, dealer, hand);
   if (!legal.includes(option)) throw new Error(`Illegal bid option: ${option}`);
 
   const entry: BidEntry = { seat, option };

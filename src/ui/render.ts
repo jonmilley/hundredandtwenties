@@ -269,7 +269,8 @@ export class Renderer {
         sectionTitle.textContent = 'Your Bid';
         const row = el('div', 'button-row');
         const isDealer = HUMAN_SEAT === state.dealer;
-        const legalOpts = state.bidding ? legalBidOptions(state.bidding, state.dealer) : [];
+        const hand = state.hands[HUMAN_SEAT];
+        const legalOpts = state.bidding ? legalBidOptions(state.bidding, state.dealer, hand) : [];
         for (const opt of legalOpts) {
           const btn = el('button', 'btn') as HTMLButtonElement;
           if (opt === 'pass') {

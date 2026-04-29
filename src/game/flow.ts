@@ -117,13 +117,16 @@ export function getCurrentBidderSeat(state: GameState): Seat | null {
 
 export function getLegalBidOptions(state: GameState): BidOption[] {
   if (!state.bidding) return [];
-  return legalBidOptions(state.bidding, state.dealer);
+  const seat = currentBidder(state.bidding);
+  const hand = seat !== null ? state.hands[seat] : undefined;
+  return legalBidOptions(state.bidding, state.dealer, hand);
 }
 
 /** Submit a bid for the current bidder. Advances phase if bidding resolves. */
 export function submitBidAction(state: GameState, seat: Seat, option: BidOption): void {
   if (!state.bidding) throw new Error('No bidding state');
-  const { state: nextB } = submitBid(state.bidding, seat, option, state.dealer);
+  const hand = state.hands[seat];
+  const { state: nextB } = submitBid(state.bidding, seat, option, state.dealer, hand);
   state.bidding = nextB;
   state.log.push(`Seat ${seat}: ${option === 'pass' ? 'pass' : `bid ${option}`}`);
   if (state.bidding.done) {
