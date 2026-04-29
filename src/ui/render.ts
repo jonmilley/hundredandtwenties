@@ -21,6 +21,7 @@ export type UICallbacks = {
   onDiscardConfirm: (seat: Seat, discards: Card[]) => void;
   onDealClick: () => void;
   onScoreClose: () => void;
+  onIntroClose: () => void;
 };
 
 export class Renderer {
@@ -62,6 +63,9 @@ export class Renderer {
     app.appendChild(this.renderPanel(state));
 
     // Overlays
+    if (state.phase === 'intro') {
+      app.appendChild(this.renderIntroModal());
+    }
     if (state.phase === 'kitty') {
       app.appendChild(this.renderKittyModal(state));
     }
@@ -523,6 +527,49 @@ export class Renderer {
     return modal;
   }
 
+  private renderIntroModal(): HTMLElement {
+    const modal = el('div', 'modal');
+    const inner = el('div', 'modal__inner');
+    inner.style.maxWidth = '500px';
+    inner.style.textAlign = 'left';
+
+    const title = el('div', 'modal__title');
+    title.textContent = 'Hundred And Twenties';
+    title.style.textAlign = 'center';
+    title.style.marginBottom = '20px';
+    inner.appendChild(title);
+
+    const content = el('div', '');
+    content.style.fontSize = '14px';
+    content.style.lineHeight = '1.5';
+    content.style.color = 'var(--muted)';
+    content.innerHTML = `
+      <p>A classic Newfoundland trick-taking game played in teams of two. The first team to <b>120 points</b> wins!</p>
+      <h4 style="color:var(--text);margin-top:16px;margin-bottom:8px">Rules at a Glance</h4>
+      <ul style="padding-left:20px">
+        <li><b>Bidding:</b> Players bid 20-30 points. High bidder picks trump and takes the 3-card kitty.</li>
+        <li><b>Trump Ranking:</b> 5 (High), Jack, Ace of Hearts, Ace of Trump, K, Q, 10...</li>
+        <li><b>Off-suit Ranking:</b> "Highest in Red (A, K, Q...), Lowest in Black (A, 2, 3...)"</li>
+        <li><b>Following Suit:</b> You can play trump at any time. If trump is led, you must follow unless you hold the 5, J, or A of Hearts (the "Big Three").</li>
+        <li><b>Scoring:</b> Each trick is 5 points. Best trump is +5. If you fail your bid, you lose those points!</li>
+      </ul>
+      <p style="margin-top:16px;font-size:12px;opacity:0.8">
+        Rules based on: <a href="https://www.cs.mun.ca/~paul/nahanni/paul/c120.html" target="_blank" style="color:var(--gold)">Paul Rice's Guide</a>
+      </p>
+    `;
+    inner.appendChild(content);
+
+    const btn = el('button', 'btn is-primary') as HTMLButtonElement;
+    btn.textContent = 'Start Playing';
+    btn.style.marginTop = '20px';
+    btn.style.width = '100%';
+    btn.addEventListener('click', () => this.cb.onIntroClose());
+    inner.appendChild(btn);
+
+    modal.appendChild(inner);
+    return modal;
+  }
+
   showTrumpSelectedKittyModal(state: GameState, trump: Suit): void {
     // Replace kitty modal with discard modal.
     const existing = this.root.querySelector('.modal');
@@ -588,6 +635,7 @@ function cardBack(): HTMLElement {
 
 function phaseLabel(state: GameState): string {
   switch (state.phase) {
+    case 'intro': return 'Welcome';
     case 'deal': return 'Deal';
     case 'bid': return 'Bidding';
     case 'kitty': return 'Kitty';

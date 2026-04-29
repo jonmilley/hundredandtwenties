@@ -38,6 +38,7 @@ export type TrickPlay = { seat: Seat; card: Card };
 export type Trick = { plays: TrickPlay[]; ledSuit?: Suit; winner?: Seat };
 
 export type Phase =
+  | 'intro'
   | 'deal'
   | 'bid'
   | 'kitty'      // bidder picks trump and uses the kitty

@@ -43,7 +43,7 @@ export function makeInitialState(seed: number, settings?: Partial<Settings>): Ga
   const dealer: Seat = 3; // first deal: dealer to right of you (seat 3); you (0) bid first
   const state: GameState = {
     rngSeed: seed,
-    phase: 'deal',
+    phase: 'intro',
     dealer,
     hands: { 0: [], 1: [], 2: [], 3: [] } as GameState['hands'],
     kitty: [],

@@ -107,6 +107,12 @@ const callbacks: UICallbacks = {
     resolveScorePhase(state);
     renderer.render(state);
   },
+
+  onIntroClose() {
+    if (ph() !== 'intro') return;
+    state.phase = 'deal';
+    renderer.render(state);
+  },
 };
 
 const renderer = new Renderer(appEl, callbacks);
