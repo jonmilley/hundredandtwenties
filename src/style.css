@@ -571,10 +571,19 @@ button.btn.is-text:hover {
   .table {
     height: auto;
     min-height: 420px;
-    aspect-ratio: 1 / 1;
-    padding: 8px;
-    flex: none;
+    padding: 4px;
+    flex: 1;
     width: 100%;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .center {
+    padding: 0;
+    gap: 4px;
+  }
+
+  .seat {
+    gap: 2px;
   }
 
   .panel {
@@ -620,7 +629,7 @@ button.btn.is-text:hover {
   }
 
   .hand {
-    min-height: 80px;
+    min-height: 70px;
   }
 
   .hand--south .card { margin-left: -20px; }
@@ -653,6 +662,6 @@ button.btn.is-text:hover {
     height: 70px;
   }
   .hand {
-    min-height: 80px;
+    min-height: 70px;
   }
 }
