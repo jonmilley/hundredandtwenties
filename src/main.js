@@ -1,6 +1,6 @@
 import './style.css';
 import { dealHand, discardAndDraw, getLegalBidOptions, makeInitialState, playCard, resolveScorePhase, setTrumpAndTakeKitty, submitBidAction, } from './game/flow';
-import { HUMAN_SEAT } from './game/state';
+import { HUMAN_SEAT, loadState, saveState, } from './game/state';
 import { aiBid, aiBidderDiscard, aiNonBidderDiscard, aiPickCard, pickBestTrump, } from './ai/index';
 import { Renderer } from './ui/render';
 const AI_BID_DELAY_MS = 850;
@@ -8,10 +8,15 @@ const AI_CARD_DELAY_MS = 800;
 const AI_DISCARD_DELAY_MS = 500;
 const TRICK_WINNER_PAUSE_MS = 1300;
 const appEl = document.getElementById('app');
-let state = makeInitialState(Date.now());
+let state = loadState() || makeInitialState(Date.now());
 let pendingTrump = null;
 /** Read phase fresh (avoids TS narrowing sticking after mutations). */
 const ph = () => state.phase;
+/** Wrap renderer.render to also persist state. */
+const render = (options = {}) => {
+    saveState(state);
+    renderer.render(state, options);
+};
 const callbacks = {
     onCardClick(seat, idx) {
         if (ph() !== 'play' || state.toAct !== HUMAN_SEAT)
@@ -31,7 +36,7 @@ const callbacks = {
         const winner = trickJustCompleted
             ? state.completedTricks[state.completedTricks.length - 1].winner
             : undefined;
-        renderer.render(state, { trickWinner: winner });
+        render({ trickWinner: winner });
         if (trickJustCompleted && ph() === 'play') {
             // Pause to show the trick winner, then let AI lead (skipping its initial delay).
             setTimeout(() => { if (ph() === 'play')
@@ -48,7 +53,7 @@ const callbacks = {
         if (!legal.includes(option))
             return;
         submitBidAction(state, HUMAN_SEAT, option);
-        renderer.render(state);
+        render();
         if (ph() === 'kitty') {
             if (state.contract?.bidder !== HUMAN_SEAT)
                 scheduleAIKitty();
@@ -68,7 +73,7 @@ const callbacks = {
             return;
         setTrumpAndTakeKitty(state, pendingTrump, discards);
         pendingTrump = null;
-        renderer.render(state);
+        render();
         if (ph() === 'discard')
             scheduleAIDiscard();
     },
@@ -76,7 +81,7 @@ const callbacks = {
         if (ph() !== 'discard')
             return;
         discardAndDraw(state, seat, discards);
-        renderer.render(state);
+        render();
         if (ph() === 'discard')
             scheduleAIDiscard();
         else if (ph() === 'play')
@@ -87,24 +92,36 @@ const callbacks = {
             state = makeInitialState(Date.now());
         }
         dealHand(state);
-        renderer.render(state, { dealAnimation: true });
+        render({ dealAnimation: true });
         scheduleAIBid();
     },
     onScoreClose() {
         if (ph() !== 'score')
             return;
         resolveScorePhase(state);
-        renderer.render(state);
+        render();
     },
     onIntroClose() {
         if (ph() !== 'intro')
             return;
         state.phase = 'deal';
-        renderer.render(state);
+        render();
     },
 };
 const renderer = new Renderer(appEl, callbacks);
-renderer.render(state);
+render();
+// Resume AI if it's their turn on load
+function resumeAI() {
+    if (ph() === 'bid')
+        scheduleAIBid();
+    else if (ph() === 'kitty' && state.contract?.bidder !== HUMAN_SEAT)
+        scheduleAIKitty();
+    else if (ph() === 'discard' && state.discardQueue[0] !== HUMAN_SEAT && state.discardQueue.length > 0)
+        scheduleAIDiscard();
+    else if (ph() === 'play' && state.toAct !== HUMAN_SEAT && state.toAct !== null)
+        scheduleAIPlay();
+}
+resumeAI();
 // ---- AI turn scheduling ----
 function delay(ms) {
     return new Promise((r) => setTimeout(r, ms));
@@ -119,7 +136,7 @@ async function scheduleAIBid() {
             break;
         const option = aiBid(state, bidder);
         submitBidAction(state, bidder, option);
-        renderer.render(state);
+        render();
     }
     if (ph() === 'kitty' && state.contract) {
         if (state.contract.bidder !== HUMAN_SEAT)
@@ -136,7 +153,7 @@ async function scheduleAIKitty() {
     const { suit } = pickBestTrump(state.hands[bidder]);
     const discards = aiBidderDiscard(state.hands[bidder], state.kitty, suit);
     setTrumpAndTakeKitty(state, suit, discards);
-    renderer.render(state);
+    render();
     if (ph() === 'discard')
         scheduleAIDiscard();
     else if (ph() === 'play')
@@ -152,7 +169,7 @@ async function scheduleAIDiscard() {
             break;
         const discards = aiNonBidderDiscard(state.hands[seat], state.trump);
         discardAndDraw(state, seat, discards);
-        renderer.render(state);
+        render();
     }
     if (ph() === 'play')
         scheduleAIPlay();
@@ -175,7 +192,7 @@ async function scheduleAIPlay(skipInitialDelay = false) {
         const winner = trickJustCompleted
             ? state.completedTricks[state.completedTricks.length - 1].winner
             : undefined;
-        renderer.render(state, { trickWinner: winner });
+        render({ trickWinner: winner });
         if (trickJustCompleted && ph() === 'play') {
             await delay(TRICK_WINNER_PAUSE_MS);
             skipDelay = true; // The pause IS the gap; don't add another delay before the lead.

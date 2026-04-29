@@ -91,3 +91,28 @@ export type GameState = {
 };
 
 export const HUMAN_SEAT: Seat = 0;
+
+const STORAGE_KEY = 'h120_game_state';
+
+export function saveState(state: GameState): void {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save state to sessionStorage', e);
+  }
+}
+
+export function loadState(): GameState | null {
+  try {
+    const data = sessionStorage.getItem(STORAGE_KEY);
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch (e) {
+    console.error('Failed to load state from sessionStorage', e);
+    return null;
+  }
+}
+
+export function clearSavedState(): void {
+  sessionStorage.removeItem(STORAGE_KEY);
+}
