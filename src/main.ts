@@ -17,6 +17,7 @@ import {
   Seat,
   loadState,
   saveState,
+  clearSavedState,
 } from './game/state';
 import {
   aiBid,
@@ -125,6 +126,11 @@ const callbacks: UICallbacks = {
     if (ph() !== 'intro') return;
     state.phase = 'deal';
     render();
+  },
+
+  onRestart() {
+    clearSavedState();
+    window.location.reload();
   },
 };
 

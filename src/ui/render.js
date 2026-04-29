@@ -318,6 +318,17 @@ export class Renderer {
             log.appendChild(row);
         }
         panel.appendChild(log);
+        // Restart button
+        const restartContainer = el('div', 'restart-container');
+        const restartBtn = el('button', 'btn is-small');
+        restartBtn.textContent = 'Restart Game';
+        restartBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to restart the game? Your current progress will be lost.')) {
+                this.cb.onRestart();
+            }
+        });
+        restartContainer.appendChild(restartBtn);
+        panel.appendChild(restartContainer);
         return panel;
     }
     renderKittyModal(state) {

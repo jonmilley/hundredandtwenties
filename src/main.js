@@ -1,6 +1,6 @@
 import './style.css';
 import { dealHand, discardAndDraw, getLegalBidOptions, makeInitialState, playCard, resolveScorePhase, setTrumpAndTakeKitty, submitBidAction, } from './game/flow';
-import { HUMAN_SEAT, loadState, saveState, } from './game/state';
+import { HUMAN_SEAT, loadState, saveState, clearSavedState, } from './game/state';
 import { aiBid, aiBidderDiscard, aiNonBidderDiscard, aiPickCard, pickBestTrump, } from './ai/index';
 import { Renderer } from './ui/render';
 const AI_BID_DELAY_MS = 850;
@@ -106,6 +106,10 @@ const callbacks = {
             return;
         state.phase = 'deal';
         render();
+    },
+    onRestart() {
+        clearSavedState();
+        window.location.reload();
     },
 };
 const renderer = new Renderer(appEl, callbacks);

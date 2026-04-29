@@ -385,6 +385,22 @@ button.btn.is-primary:hover:not(:disabled) {
   background: var(--gold-bright);
 }
 
+button.btn.is-small {
+  padding: 4px 8px;
+  font-size: 10px;
+  opacity: 0.6;
+}
+button.btn.is-small:hover {
+  opacity: 1;
+}
+
+.restart-container {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
 .suit-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
