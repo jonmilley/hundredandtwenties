@@ -32,6 +32,7 @@ export class Renderer {
   private cb: UICallbacks;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private discardSelected = new Set<number>();
+  private logExpanded = false;
 
   constructor(root: HTMLElement, cb: UICallbacks) {
     this.root = root;
@@ -342,11 +343,26 @@ export class Renderer {
     panel.appendChild(section);
 
     // Log
+    const logHeader = el('div', 'log-header');
     const logTitle = el('div', 'panel__title');
     logTitle.textContent = 'Log';
-    panel.appendChild(logTitle);
-    const log = el('div', 'log');
-    for (const entry of [...state.log].reverse().slice(0, 30)) {
+    logHeader.appendChild(logTitle);
+    
+    const expandBtn = el('button', 'btn is-text is-tiny') as HTMLButtonElement;
+    expandBtn.textContent = this.logExpanded ? 'Collapse' : 'Expand';
+    expandBtn.addEventListener('click', () => {
+      this.logExpanded = !this.logExpanded;
+      this.render(state);
+    });
+    logHeader.appendChild(expandBtn);
+    panel.appendChild(logHeader);
+
+    const log = el('div', `log${this.logExpanded ? '' : ' log--collapsed'}`);
+    const entries = this.logExpanded 
+      ? [...state.log].reverse().slice(0, 30)
+      : (state.log.length > 0 ? [[...state.log].pop()!] : []);
+
+    for (const entry of entries) {
       const row = el('div', 'log__entry');
       row.textContent = entry;
       log.appendChild(row);

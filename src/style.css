@@ -392,6 +392,22 @@ button.btn.is-small:hover {
   opacity: 1;
 }
 
+button.btn.is-tiny {
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+button.btn.is-text {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+button.btn.is-text:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
 .restart-container {
   margin-top: auto;
   display: flex;
@@ -437,6 +453,12 @@ button.btn.is-small:hover {
   background: #fff;
 }
 
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .log {
   flex: 1;
   overflow-y: auto;
@@ -448,7 +470,15 @@ button.btn.is-small:hover {
   padding: 8px;
   border-radius: 6px;
   border: 1px solid var(--panel-stroke);
+  transition: flex 200ms ease;
 }
+
+.log--collapsed {
+  flex: none;
+  min-height: 2.5em;
+  overflow: hidden;
+}
+
 .log__entry {
   margin-bottom: 2px;
 }
