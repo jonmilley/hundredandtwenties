@@ -401,6 +401,22 @@ button.btn.is-small:hover {
   padding-top: 8px;
 }
 
+.bmc-container {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.bmc-img {
+  height: 40px;
+  width: auto;
+  transition: transform 120ms ease;
+}
+
+.bmc-img:hover {
+  transform: scale(1.05);
+}
+
 .suit-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

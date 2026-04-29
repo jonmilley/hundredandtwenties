@@ -365,6 +365,21 @@ export class Renderer {
     restartContainer.appendChild(restartBtn);
     panel.appendChild(restartContainer);
 
+    // BMC button
+    const bmcContainer = el('div', 'bmc-container');
+    const bmcLink = el('a', 'bmc-link');
+    bmcLink.setAttribute('href', 'https://www.buymeacoffee.com/jonmilley');
+    bmcLink.setAttribute('target', '_blank');
+    bmcLink.setAttribute('rel', 'noreferrer');
+    
+    const bmcImg = el('img', 'bmc-img');
+    bmcImg.setAttribute('src', 'https://cdn.buymeacoffee.com/buttons/v2/default-blue.png');
+    bmcImg.setAttribute('alt', 'Buy me a coffee');
+    
+    bmcLink.appendChild(bmcImg);
+    bmcContainer.appendChild(bmcLink);
+    panel.appendChild(bmcContainer);
+
     return panel;
   }
 
