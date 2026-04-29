@@ -1,0 +1,62 @@
+- generic [ref=e2]:
+  - generic [ref=e447]:
+    - generic [ref=e448]:
+      - generic [ref=e450]: North
+      - generic [ref=e451]:
+        - img [ref=e453]
+        - img [ref=e456]
+        - img [ref=e459]
+        - img [ref=e462]
+        - img [ref=e465]
+    - generic [ref=e467]:
+      - generic [ref=e469]: West
+      - generic [ref=e470]:
+        - img [ref=e472]
+        - img [ref=e475]
+        - img [ref=e478]
+        - img [ref=e481]
+        - img [ref=e484]
+    - generic [ref=e488]:
+      - generic [ref=e489]: Discard
+      - generic [ref=e490]: ♥
+    - generic [ref=e491]:
+      - generic [ref=e492]:
+        - generic [ref=e493]: East
+        - generic [ref=e494]: D
+        - generic [ref=e495]: Bid 20
+      - generic [ref=e496]:
+        - img [ref=e498]
+        - img [ref=e501]
+        - img [ref=e504]
+        - img [ref=e507]
+        - img [ref=e510]
+    - generic [ref=e512]:
+      - generic [ref=e514]: You
+      - generic [ref=e515]:
+        - img [ref=e517] [cursor=pointer]
+        - img [ref=e520] [cursor=pointer]
+        - img [ref=e523] [cursor=pointer]
+        - img [ref=e526] [cursor=pointer]
+        - img [ref=e529] [cursor=pointer]
+  - generic [ref=e531]:
+    - generic [ref=e532]: Score
+    - generic [ref=e533]:
+      - generic [ref=e534]:
+        - generic [ref=e535]: You & North
+        - generic [ref=e536]: "0"
+      - generic [ref=e537]:
+        - generic [ref=e538]: West & East
+        - generic [ref=e539]: "0"
+    - generic [ref=e540]:
+      - generic [ref=e541]: Discard
+      - generic [ref=e542]: 2 cards selected
+      - button "Discard 2 cards" [ref=e543] [cursor=pointer]
+    - generic [ref=e544]: Log
+    - generic [ref=e545]:
+      - generic [ref=e546]: Trump is H; bidder discarded 3 card(s).
+      - generic [ref=e547]: Seat 3 won the bid at 20.
+      - generic [ref=e548]: "Seat 3: pass"
+      - generic [ref=e549]: "Seat 2: pass"
+      - generic [ref=e550]: "Seat 1: pass"
+      - generic [ref=e551]: "Seat 0: pass"
+      - generic [ref=e552]: Hand 1 dealt; dealer is seat 3.

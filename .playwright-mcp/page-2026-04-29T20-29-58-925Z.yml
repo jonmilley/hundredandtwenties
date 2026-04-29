@@ -1,0 +1,78 @@
+- generic [ref=e2]:
+  - generic [ref=e609]:
+    - generic [ref=e612]: North
+    - generic [ref=e620]: West
+    - generic [ref=e628]:
+      - generic [ref=e629]: Playing
+      - generic [ref=e630]: ♥
+    - generic [ref=e632]:
+      - generic [ref=e633]: East
+      - generic [ref=e634]: D
+    - generic [ref=e640]:
+      - generic [ref=e641]:
+        - generic [ref=e642]: You
+        - generic [ref=e643]: Bid 20
+      - generic [ref=e644]:
+        - generic [ref=e645] [cursor=pointer]:
+          - generic [ref=e646]:
+            - generic [ref=e647]: "8"
+            - generic [ref=e648]: ♥
+          - generic: ♥
+          - generic [ref=e649]:
+            - generic [ref=e650]: "8"
+            - generic [ref=e651]: ♥
+        - generic [ref=e652] [cursor=pointer]:
+          - generic [ref=e653]:
+            - generic [ref=e654]: "4"
+            - generic [ref=e655]: ♥
+          - generic: ♥
+          - generic [ref=e656]:
+            - generic [ref=e657]: "4"
+            - generic [ref=e658]: ♥
+        - generic [ref=e659] [cursor=pointer]:
+          - generic [ref=e660]:
+            - generic [ref=e661]: "2"
+            - generic [ref=e662]: ♦
+          - generic: ♦
+          - generic [ref=e663]:
+            - generic [ref=e664]: "2"
+            - generic [ref=e665]: ♦
+        - generic [ref=e666] [cursor=pointer]:
+          - generic [ref=e667]:
+            - generic [ref=e668]: "5"
+            - generic [ref=e669]: ♦
+          - generic: ♦
+          - generic [ref=e670]:
+            - generic [ref=e671]: "5"
+            - generic [ref=e672]: ♦
+  - generic [ref=e673]:
+    - generic [ref=e674]: Score
+    - generic [ref=e675]:
+      - generic [ref=e676]:
+        - generic [ref=e677]: You & North
+        - generic [ref=e678]: "0"
+      - generic [ref=e679]:
+        - generic [ref=e680]: West & East
+        - generic [ref=e681]: "0"
+    - generic [ref=e682]:
+      - generic [ref=e683]: Your Turn — Play a Card
+      - generic [ref=e684]: "Tricks — You/North: 1 | West/East: 0"
+      - generic [ref=e685]: "Bid: 20 by You (Team You/N)"
+    - generic [ref=e686]: Log
+    - generic [ref=e687]:
+      - generic [ref=e688]: Trick won by seat 0.
+      - generic [ref=e689]: Seat 0 plays 5H
+      - generic [ref=e690]: Seat 3 plays JH
+      - generic [ref=e691]: Seat 2 plays 6H
+      - generic [ref=e692]: Seat 1 plays AS
+      - generic [ref=e693]: Play begins; lead is seat 1.
+      - generic [ref=e694]: Seat 3 discarded 4 card(s).
+      - generic [ref=e695]: Seat 2 discarded 4 card(s).
+      - generic [ref=e696]: Seat 1 discarded 1 card(s).
+      - generic [ref=e697]: Trump is H; bidder discarded 3 card(s).
+      - generic [ref=e698]: Seat 0 won the bid at 20.
+      - generic [ref=e699]: "Seat 3: pass"
+      - generic [ref=e700]: "Seat 2: pass"
+      - generic [ref=e701]: "Seat 1: pass"
+      - generic [ref=e702]: "Seat 0: bid 20"
+      - generic [ref=e703]: Hand 1 dealt; dealer is seat 3.

@@ -1,0 +1,22 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e6]: North
+    - generic [ref=e9]: West
+    - generic [ref=e13]: Deal
+    - generic [ref=e15]:
+      - generic [ref=e16]: East
+      - generic [ref=e17]: D
+    - generic [ref=e20]: You
+  - generic [ref=e21]:
+    - generic [ref=e22]: Score
+    - generic [ref=e23]:
+      - generic [ref=e24]:
+        - generic [ref=e25]: You & North
+        - generic [ref=e26]: "0"
+      - generic [ref=e27]:
+        - generic [ref=e28]: West & East
+        - generic [ref=e29]: "0"
+    - generic [ref=e30]:
+      - generic [ref=e31]: Ready
+      - button "Start Game" [ref=e32] [cursor=pointer]
+    - generic [ref=e33]: Log

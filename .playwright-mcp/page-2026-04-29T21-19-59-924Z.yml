@@ -1,0 +1,55 @@
+- generic [ref=e2]:
+  - generic [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e38]: North
+      - generic [ref=e39]:
+        - img [ref=e41]
+        - img [ref=e44]
+        - img [ref=e47]
+        - img [ref=e50]
+        - img [ref=e53]
+    - generic [ref=e55]:
+      - generic [ref=e57]: West
+      - generic [ref=e58]:
+        - img [ref=e60]
+        - img [ref=e63]
+        - img [ref=e66]
+        - img [ref=e69]
+        - img [ref=e72]
+    - generic [ref=e77]: Bidding
+    - generic [ref=e78]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: East
+        - generic [ref=e81]: D
+      - generic [ref=e82]:
+        - img [ref=e84]
+        - img [ref=e87]
+        - img [ref=e90]
+        - img [ref=e93]
+        - img [ref=e96]
+    - generic [ref=e98]:
+      - generic [ref=e100]: You
+      - generic [ref=e101]:
+        - img [ref=e103] [cursor=pointer]
+        - img [ref=e106] [cursor=pointer]
+        - img [ref=e109] [cursor=pointer]
+        - img [ref=e112] [cursor=pointer]
+        - img [ref=e115] [cursor=pointer]
+  - generic [ref=e117]:
+    - generic [ref=e118]: Score
+    - generic [ref=e119]:
+      - generic [ref=e120]:
+        - generic [ref=e121]: You & North
+        - generic [ref=e122]: "0"
+      - generic [ref=e123]:
+        - generic [ref=e124]: West & East
+        - generic [ref=e125]: "0"
+    - generic [ref=e126]:
+      - generic [ref=e127]: Your Bid
+      - generic [ref=e128]:
+        - button "Pass" [ref=e129] [cursor=pointer]
+        - button "Bid 20" [ref=e130] [cursor=pointer]
+        - button "Bid 25" [ref=e131] [cursor=pointer]
+        - button "Bid 30" [ref=e132] [cursor=pointer]
+    - generic [ref=e133]: Log
+    - generic [ref=e135]: Hand 1 dealt; dealer is seat 3.

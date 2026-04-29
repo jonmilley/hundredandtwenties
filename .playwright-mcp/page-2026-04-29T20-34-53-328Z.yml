@@ -1,0 +1,97 @@
+- generic [ref=e2]:
+  - generic [ref=e623]:
+    - generic [ref=e626]: North
+    - generic [ref=e634]: West
+    - generic [ref=e639]:
+      - generic [ref=e641]:
+        - generic [ref=e642]:
+          - generic [ref=e643]: "10"
+          - generic [ref=e644]: ♥
+        - generic: ♥
+        - generic [ref=e645]:
+          - generic [ref=e646]: "10"
+          - generic [ref=e647]: ♥
+      - generic [ref=e649]:
+        - generic [ref=e650]:
+          - generic [ref=e651]: "4"
+          - generic [ref=e652]: ♣
+        - generic: ♣
+        - generic [ref=e653]:
+          - generic [ref=e654]: "4"
+          - generic [ref=e655]: ♣
+      - generic [ref=e657]:
+        - generic [ref=e658]:
+          - generic [ref=e659]: "6"
+          - generic [ref=e660]: ♦
+        - generic: ♦
+        - generic [ref=e661]:
+          - generic [ref=e662]: "6"
+          - generic [ref=e663]: ♦
+      - generic [ref=e665]:
+        - generic [ref=e666]: Playing
+        - generic [ref=e667]: ♣
+    - generic [ref=e669]:
+      - generic [ref=e670]: East
+      - generic [ref=e671]: D
+      - generic [ref=e672]: Bid 20
+    - generic [ref=e677]:
+      - generic [ref=e679]: You
+      - generic [ref=e680]:
+        - generic [ref=e681] [cursor=pointer]:
+          - generic [ref=e682]:
+            - generic [ref=e683]: "3"
+            - generic [ref=e684]: ♠
+          - generic: ♠
+          - generic [ref=e685]:
+            - generic [ref=e686]: "3"
+            - generic [ref=e687]: ♠
+        - generic [ref=e688] [cursor=pointer]:
+          - generic [ref=e689]:
+            - generic [ref=e690]: "9"
+            - generic [ref=e691]: ♦
+          - generic: ♦
+          - generic [ref=e692]:
+            - generic [ref=e693]: "9"
+            - generic [ref=e694]: ♦
+        - generic [ref=e695] [cursor=pointer]:
+          - generic [ref=e696]:
+            - generic [ref=e697]: "3"
+            - generic [ref=e698]: ♥
+          - generic: ♥
+          - generic [ref=e699]:
+            - generic [ref=e700]: "3"
+            - generic [ref=e701]: ♥
+  - generic [ref=e702]:
+    - generic [ref=e703]: Score
+    - generic [ref=e704]:
+      - generic [ref=e705]:
+        - generic [ref=e706]: You & North
+        - generic [ref=e707]: "0"
+      - generic [ref=e708]:
+        - generic [ref=e709]: West & East
+        - generic [ref=e710]: "0"
+    - generic [ref=e711]:
+      - generic [ref=e712]: North is playing…
+      - generic [ref=e713]: "Tricks — You/North: 0 | West/East: 1"
+      - generic [ref=e714]: "Bid: 20 by East (Team W/E)"
+    - generic [ref=e715]: Log
+    - generic [ref=e716]:
+      - generic [ref=e717]: Seat 1 plays 6D
+      - generic [ref=e718]: Seat 0 plays 4C
+      - generic [ref=e719]: Seat 3 plays 10H
+      - generic [ref=e720]: Trick won by seat 3.
+      - generic [ref=e721]: Seat 3 plays 8H
+      - generic [ref=e722]: Seat 2 plays 7H
+      - generic [ref=e723]: Seat 1 plays 6H
+      - generic [ref=e724]: Seat 0 plays 2H
+      - generic [ref=e725]: Play begins; lead is seat 0.
+      - generic [ref=e726]: Seat 2 discarded 4 card(s).
+      - generic [ref=e727]: Seat 1 discarded 4 card(s).
+      - generic [ref=e728]: Seat 0 discarded 0 card(s).
+      - generic [ref=e729]: Trump is C; bidder discarded 3 card(s).
+      - generic [ref=e730]: Seat 3 won the bid at 20.
+      - generic [ref=e731]: "Seat 3: pass"
+      - generic [ref=e732]: "Seat 2: pass"
+      - generic [ref=e733]: "Seat 1: pass"
+      - generic [ref=e734]: "Seat 0: pass"
+      - generic [ref=e735]: Hand 1 dealt; dealer is seat 3.

@@ -1,0 +1,140 @@
+- generic [ref=e2]:
+  - generic [ref=e214]:
+    - generic [ref=e217]: North
+    - generic [ref=e226]: West
+    - generic [ref=e236]: Kitty
+    - generic [ref=e238]:
+      - generic [ref=e239]: East
+      - generic [ref=e240]: D
+    - generic [ref=e247]:
+      - generic [ref=e248]:
+        - generic [ref=e249]: You
+        - generic [ref=e250]: Bid 20
+      - generic [ref=e251]:
+        - generic [ref=e252] [cursor=pointer]:
+          - generic [ref=e253]:
+            - generic [ref=e254]: "5"
+            - generic [ref=e255]: ♥
+          - generic: ♥
+          - generic [ref=e256]:
+            - generic [ref=e257]: "5"
+            - generic [ref=e258]: ♥
+        - generic [ref=e259] [cursor=pointer]:
+          - generic [ref=e260]:
+            - generic [ref=e261]: "8"
+            - generic [ref=e262]: ♥
+          - generic: ♥
+          - generic [ref=e263]:
+            - generic [ref=e264]: "8"
+            - generic [ref=e265]: ♥
+        - generic [ref=e266] [cursor=pointer]:
+          - generic [ref=e267]:
+            - generic [ref=e268]: "4"
+            - generic [ref=e269]: ♥
+          - generic: ♥
+          - generic [ref=e270]:
+            - generic [ref=e271]: "4"
+            - generic [ref=e272]: ♥
+        - generic [ref=e273] [cursor=pointer]:
+          - generic [ref=e274]:
+            - generic [ref=e275]: "8"
+            - generic [ref=e276]: ♠
+          - generic: ♠
+          - generic [ref=e277]:
+            - generic [ref=e278]: "8"
+            - generic [ref=e279]: ♠
+        - generic [ref=e280] [cursor=pointer]:
+          - generic [ref=e281]:
+            - generic [ref=e282]: "2"
+            - generic [ref=e283]: ♦
+          - generic: ♦
+          - generic [ref=e284]:
+            - generic [ref=e285]: "2"
+            - generic [ref=e286]: ♦
+  - generic [ref=e287]:
+    - generic [ref=e288]: Score
+    - generic [ref=e289]:
+      - generic [ref=e290]:
+        - generic [ref=e291]: You & North
+        - generic [ref=e292]: "0"
+      - generic [ref=e293]:
+        - generic [ref=e294]: West & East
+        - generic [ref=e295]: "0"
+    - generic [ref=e297]: Pick Trump
+    - generic [ref=e298]: Log
+    - generic [ref=e299]:
+      - generic [ref=e300]: Seat 0 won the bid at 20.
+      - generic [ref=e301]: "Seat 3: pass"
+      - generic [ref=e302]: "Seat 2: pass"
+      - generic [ref=e303]: "Seat 1: pass"
+      - generic [ref=e304]: "Seat 0: bid 20"
+      - generic [ref=e305]: Hand 1 dealt; dealer is seat 3.
+  - generic [ref=e324]:
+    - generic [ref=e325]: "Trump: ♥ Hearts — Select Discards"
+    - generic [ref=e326]: Click cards to discard (they'll be highlighted). You must keep exactly 5.
+    - generic [ref=e327]:
+      - generic [ref=e328] [cursor=pointer]:
+        - generic [ref=e329]:
+          - generic [ref=e330]: "5"
+          - generic [ref=e331]: ♥
+        - generic: ♥
+        - generic [ref=e332]:
+          - generic [ref=e333]: "5"
+          - generic [ref=e334]: ♥
+      - generic [ref=e335] [cursor=pointer]:
+        - generic [ref=e336]:
+          - generic [ref=e337]: "8"
+          - generic [ref=e338]: ♥
+        - generic: ♥
+        - generic [ref=e339]:
+          - generic [ref=e340]: "8"
+          - generic [ref=e341]: ♥
+      - generic [ref=e342] [cursor=pointer]:
+        - generic [ref=e343]:
+          - generic [ref=e344]: "4"
+          - generic [ref=e345]: ♥
+        - generic: ♥
+        - generic [ref=e346]:
+          - generic [ref=e347]: "4"
+          - generic [ref=e348]: ♥
+      - generic [ref=e349] [cursor=pointer]:
+        - generic [ref=e350]:
+          - generic [ref=e351]: "8"
+          - generic [ref=e352]: ♠
+        - generic: ♠
+        - generic [ref=e353]:
+          - generic [ref=e354]: "8"
+          - generic [ref=e355]: ♠
+      - generic [ref=e356] [cursor=pointer]:
+        - generic [ref=e357]:
+          - generic [ref=e358]: "2"
+          - generic [ref=e359]: ♦
+        - generic: ♦
+        - generic [ref=e360]:
+          - generic [ref=e361]: "2"
+          - generic [ref=e362]: ♦
+      - generic [ref=e363] [cursor=pointer]:
+        - generic [ref=e364]:
+          - generic [ref=e365]: "5"
+          - generic [ref=e366]: ♦
+        - generic: ♦
+        - generic [ref=e367]:
+          - generic [ref=e368]: "5"
+          - generic [ref=e369]: ♦
+      - generic [ref=e370] [cursor=pointer]:
+        - generic [ref=e371]:
+          - generic [ref=e372]: "9"
+          - generic [ref=e373]: ♣
+        - generic: ♣
+        - generic [ref=e374]:
+          - generic [ref=e375]: "9"
+          - generic [ref=e376]: ♣
+      - generic [ref=e377] [cursor=pointer]:
+        - generic [ref=e378]:
+          - generic [ref=e379]: Q
+          - generic [ref=e380]: ♣
+        - generic: ♣
+        - generic [ref=e381]:
+          - generic [ref=e382]: Q
+          - generic [ref=e383]: ♣
+    - button "Confirm Discards" [disabled] [ref=e384]

@@ -1,0 +1,66 @@
+- generic [ref=e2]:
+  - generic [ref=e126]:
+    - generic [ref=e129]: North
+    - generic [ref=e138]: West
+    - generic [ref=e148]: Bidding
+    - generic [ref=e150]:
+      - generic [ref=e151]: East
+      - generic [ref=e152]: D
+    - generic [ref=e159]:
+      - generic [ref=e161]: You
+      - generic [ref=e162]:
+        - generic [ref=e163] [cursor=pointer]:
+          - generic [ref=e164]:
+            - generic [ref=e165]: "2"
+            - generic [ref=e166]: ♥
+          - generic: ♥
+          - generic [ref=e167]:
+            - generic [ref=e168]: "2"
+            - generic [ref=e169]: ♥
+        - generic [ref=e170] [cursor=pointer]:
+          - generic [ref=e171]:
+            - generic [ref=e172]: "3"
+            - generic [ref=e173]: ♠
+          - generic: ♠
+          - generic [ref=e174]:
+            - generic [ref=e175]: "3"
+            - generic [ref=e176]: ♠
+        - generic [ref=e177] [cursor=pointer]:
+          - generic [ref=e178]:
+            - generic [ref=e179]: "9"
+            - generic [ref=e180]: ♦
+          - generic: ♦
+          - generic [ref=e181]:
+            - generic [ref=e182]: "9"
+            - generic [ref=e183]: ♦
+        - generic [ref=e184] [cursor=pointer]:
+          - generic [ref=e185]:
+            - generic [ref=e186]: "3"
+            - generic [ref=e187]: ♥
+          - generic: ♥
+          - generic [ref=e188]:
+            - generic [ref=e189]: "3"
+            - generic [ref=e190]: ♥
+        - generic [ref=e191] [cursor=pointer]:
+          - generic [ref=e192]:
+            - generic [ref=e193]: "4"
+            - generic [ref=e194]: ♣
+          - generic: ♣
+          - generic [ref=e195]:
+            - generic [ref=e196]: "4"
+            - generic [ref=e197]: ♣
+  - generic [ref=e198]:
+    - generic [ref=e199]: Score
+    - generic [ref=e200]:
+      - generic [ref=e201]:
+        - generic [ref=e202]: You & North
+        - generic [ref=e203]: "0"
+      - generic [ref=e204]:
+        - generic [ref=e205]: West & East
+        - generic [ref=e206]: "0"
+    - generic [ref=e208]: North is bidding…
+    - generic [ref=e209]: Log
+    - generic [ref=e210]:
+      - generic [ref=e211]: "Seat 1: pass"
+      - generic [ref=e212]: "Seat 0: pass"
+      - generic [ref=e213]: Hand 1 dealt; dealer is seat 3.

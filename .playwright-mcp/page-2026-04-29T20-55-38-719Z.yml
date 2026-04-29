@@ -1,0 +1,66 @@
+- generic [ref=e2]:
+  - generic [ref=e361]:
+    - generic [ref=e362]:
+      - generic [ref=e364]: North
+      - generic [ref=e365]:
+        - img [ref=e367]
+        - img [ref=e370]
+        - img [ref=e373]
+        - img [ref=e376]
+        - img [ref=e379]
+    - generic [ref=e381]:
+      - generic [ref=e383]: West
+      - generic [ref=e384]:
+        - img [ref=e386]
+        - img [ref=e389]
+        - img [ref=e392]
+        - img [ref=e395]
+        - img [ref=e398]
+    - generic [ref=e402]:
+      - generic [ref=e403]: Playing
+      - generic [ref=e404]: ♥
+    - generic [ref=e405]:
+      - generic [ref=e406]:
+        - generic [ref=e407]: East
+        - generic [ref=e408]: D
+        - generic [ref=e409]: Bid 20
+      - generic [ref=e410]:
+        - img [ref=e412]
+        - img [ref=e415]
+        - img [ref=e418]
+        - img [ref=e421]
+        - img [ref=e424]
+    - generic [ref=e426]:
+      - generic [ref=e428]: You
+      - generic [ref=e429]:
+        - img [ref=e431] [cursor=pointer]
+        - img [ref=e434] [cursor=pointer]
+        - img [ref=e437] [cursor=pointer]
+        - img [ref=e440] [cursor=pointer]
+        - img [ref=e443] [cursor=pointer]
+  - generic [ref=e445]:
+    - generic [ref=e446]: Score
+    - generic [ref=e447]:
+      - generic [ref=e448]:
+        - generic [ref=e449]: You & North
+        - generic [ref=e450]: "0"
+      - generic [ref=e451]:
+        - generic [ref=e452]: West & East
+        - generic [ref=e453]: "0"
+    - generic [ref=e454]:
+      - generic [ref=e455]: Your Turn — Play a Card
+      - generic [ref=e456]: "Tricks — You/North: 0 | West/East: 0"
+      - generic [ref=e457]: "Bid: 20 by East (Team W/E)"
+    - generic [ref=e458]: Log
+    - generic [ref=e459]:
+      - generic [ref=e460]: Play begins; lead is seat 0.
+      - generic [ref=e461]: Seat 2 discarded 2 card(s).
+      - generic [ref=e462]: Seat 1 discarded 2 card(s).
+      - generic [ref=e463]: Seat 0 discarded 0 card(s).
+      - generic [ref=e464]: Trump is H; bidder discarded 3 card(s).
+      - generic [ref=e465]: Seat 3 won the bid at 20.
+      - generic [ref=e466]: "Seat 3: pass"
+      - generic [ref=e467]: "Seat 2: pass"
+      - generic [ref=e468]: "Seat 1: pass"
+      - generic [ref=e469]: "Seat 0: pass"
+      - generic [ref=e470]: Hand 1 dealt; dealer is seat 3.

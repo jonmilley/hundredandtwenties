@@ -1,0 +1,71 @@
+- generic [ref=e2]:
+  - generic [ref=e235]:
+    - generic [ref=e236]:
+      - generic [ref=e238]: North
+      - generic [ref=e239]:
+        - img [ref=e241]
+        - img [ref=e244]
+        - img [ref=e247]
+        - img [ref=e250]
+        - img [ref=e253]
+    - generic [ref=e255]:
+      - generic [ref=e257]: West
+      - generic [ref=e258]:
+        - img [ref=e260]
+        - img [ref=e263]
+        - img [ref=e266]
+        - img [ref=e269]
+        - img [ref=e272]
+    - generic [ref=e277]: Kitty
+    - generic [ref=e278]:
+      - generic [ref=e279]:
+        - generic [ref=e280]: East
+        - generic [ref=e281]: D
+      - generic [ref=e282]:
+        - img [ref=e284]
+        - img [ref=e287]
+        - img [ref=e290]
+        - img [ref=e293]
+        - img [ref=e296]
+    - generic [ref=e298]:
+      - generic [ref=e299]:
+        - generic [ref=e300]: You
+        - generic [ref=e301]: Bid 20
+      - generic [ref=e302]:
+        - img [ref=e304] [cursor=pointer]
+        - img [ref=e307] [cursor=pointer]
+        - img [ref=e310] [cursor=pointer]
+        - img [ref=e313] [cursor=pointer]
+        - img [ref=e316] [cursor=pointer]
+  - generic [ref=e318]:
+    - generic [ref=e319]: Score
+    - generic [ref=e320]:
+      - generic [ref=e321]:
+        - generic [ref=e322]: You & North
+        - generic [ref=e323]: "0"
+      - generic [ref=e324]:
+        - generic [ref=e325]: West & East
+        - generic [ref=e326]: "0"
+    - generic [ref=e328]: Pick Trump
+    - generic [ref=e329]: Log
+    - generic [ref=e330]:
+      - generic [ref=e331]: Seat 0 won the bid at 20.
+      - generic [ref=e332]: "Seat 3: pass"
+      - generic [ref=e333]: "Seat 2: pass"
+      - generic [ref=e334]: "Seat 1: pass"
+      - generic [ref=e335]: "Seat 0: bid 20"
+      - generic [ref=e336]: Hand 1 dealt; dealer is seat 3.
+  - generic [ref=e338]:
+    - generic [ref=e339]: "Trump: ♥ Hearts — Select Discards"
+    - generic [ref=e340]: Discard at least 3 cards — extras get replaced from the deck.
+    - generic [ref=e341]: Discarding 2
+    - generic [ref=e342]:
+      - img [ref=e344] [cursor=pointer]
+      - img [ref=e347] [cursor=pointer]
+      - img [ref=e350] [cursor=pointer]
+      - img [ref=e353] [cursor=pointer]
+      - img [ref=e356] [cursor=pointer]
+      - img [ref=e359] [cursor=pointer]
+      - img [ref=e362] [cursor=pointer]
+      - img [ref=e365] [cursor=pointer]
+    - button "Confirm Discards" [disabled] [ref=e367]
