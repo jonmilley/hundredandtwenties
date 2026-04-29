@@ -37,6 +37,7 @@ export function makeInitialState(seed, settings) {
         totalScore: [0, 0],
         handsPlayed: 0,
         settings: { inHoleVariant: false, ...settings },
+        bidOnKitty: false,
         log: [],
         version: 0,
     };
@@ -78,6 +79,7 @@ export function dealHand(state) {
     state.currentTrick = null;
     state.completedTricks = [];
     state.tricksWon = [0, 0];
+    state.bidOnKitty = false;
     state.phase = 'bid';
     state.log.push(`Hand ${state.handsPlayed + 1} dealt; dealer is seat ${state.dealer}.`);
     state.version++;
@@ -103,10 +105,48 @@ export function submitBidAction(state, seat, option) {
         const res = biddingResolution(state.bidding);
         if (res) {
             state.contract = res;
-            state.phase = 'kitty';
+            state.phase = 'bid_on_kitty';
             state.log.push(`Seat ${res.bidder} won the bid at ${res.amount}.`);
         }
     }
+    state.version++;
+}
+/** Bidder chooses to use the kitty normally: pick trump first, then see kitty. */
+export function chooseNormalKitty(state) {
+    if (state.phase !== 'bid_on_kitty')
+        throw new Error('Not in kitty choice phase');
+    state.bidOnKitty = false;
+    state.phase = 'kitty';
+    state.version++;
+}
+/**
+ * Bidder chooses "Bid on the Kitty": keep only 1 card from hand, then see
+ * kitty and pick trump.
+ */
+export function chooseOneCardKitty(state) {
+    if (state.phase !== 'bid_on_kitty')
+        throw new Error('Not in kitty choice phase');
+    state.bidOnKitty = true;
+    // Moves to the sub-phase of picking the 1 card to keep.
+    // We reuse 'bid_on_kitty' and let UI show the card selection.
+    state.version++;
+}
+/** Finalize the "keep 1" part of Bid on the Kitty. */
+export function finalizeOneCardKittyKeep(state, keepIndex) {
+    if (state.phase !== 'bid_on_kitty' || !state.bidOnKitty || !state.contract) {
+        throw new Error('Invalid state for finalizing kitty keep');
+    }
+    const bidder = state.contract.bidder;
+    const hand = state.hands[bidder];
+    const keptCard = hand[keepIndex];
+    if (!keptCard)
+        throw new Error('Invalid card index');
+    const discards = [...hand.slice(0, keepIndex), ...hand.slice(keepIndex + 1)];
+    state.hands[bidder] = [keptCard];
+    // One-card kitty discards go to stock.
+    state.stock = [...state.stock, ...discards];
+    state.phase = 'kitty';
+    state.log.push(`Seat ${bidder} bid on the kitty (kept 1 card).`);
     state.version++;
 }
 /**
@@ -125,12 +165,14 @@ export function setTrumpAndTakeKitty(state, trump, bidderDiscards) {
     const combined = [...state.hands[bidder], ...state.kitty];
     state.kitty = [];
     // Verify discards exist in combined hand and that at least the kitty is returned.
-    const minDiscard = combined.length - HAND_SIZE; // must discard at least KITTY_SIZE (3)
+    // Exception: if bidOnKitty was true, they might only have 4 cards total (1 kept + 3 kitty),
+    // so they don't discard any of those; they draw 1 to get back to 5.
+    const minDiscard = Math.max(0, combined.length - HAND_SIZE);
     if (bidderDiscards.length < minDiscard) {
         throw new Error(`Must discard at least ${minDiscard} cards`);
     }
     const remaining = removeCards(combined, bidderDiscards);
-    // Draw replacements from stock for any discards beyond the minimum.
+    // Draw replacements from stock to reach HAND_SIZE.
     const extraDraw = HAND_SIZE - remaining.length;
     const drawn = extraDraw > 0 ? state.stock.splice(0, extraDraw) : [];
     state.hands[bidder] = [...remaining, ...drawn];

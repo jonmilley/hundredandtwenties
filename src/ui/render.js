@@ -41,6 +41,9 @@ export class Renderer {
         if (state.phase === 'intro') {
             app.appendChild(this.renderIntroModal());
         }
+        if (state.phase === 'bid_on_kitty') {
+            app.appendChild(this.renderBidOnKittyModal(state));
+        }
         if (state.phase === 'kitty') {
             app.appendChild(this.renderKittyModal(state));
         }
@@ -342,7 +345,15 @@ export class Renderer {
         const hint = el('div', '');
         hint.style.fontSize = '13px';
         hint.style.color = 'var(--muted)';
-        hint.textContent = `Kitty cards added to your hand (${state.kitty.length}). Choose trump, then discard at least ${state.kitty.length} — extra discards get replaced from the deck.`;
+        if (state.bidOnKitty) {
+            hint.textContent = 'You chose Bid on the Kitty. Here are the 3 cards. Now name trump:';
+            const kittyRow = el('div', 'modal__hand');
+            state.kitty.forEach(c => kittyRow.appendChild(cardFace(c)));
+            inner.appendChild(kittyRow);
+        }
+        else {
+            hint.textContent = `Kitty cards added to your hand (${state.kitty.length}). Choose trump, then discard at least ${state.kitty.length} — extra discards get replaced from the deck.`;
+        }
         inner.appendChild(hint);
         // Trump buttons
         const suitGrid = el('div', 'suit-grid');
@@ -525,6 +536,55 @@ export class Renderer {
         modal.appendChild(inner);
         return modal;
     }
+    renderBidOnKittyModal(state) {
+        const modal = el('div', 'modal');
+        const inner = el('div', 'modal__inner');
+        const title = el('div', 'modal__title');
+        inner.appendChild(title);
+        if (state.contract?.bidder !== HUMAN_SEAT) {
+            title.textContent = `${SEAT_NAMES[state.contract?.bidder ?? 1]} is choosing kitty option...`;
+            modal.appendChild(inner);
+            return modal;
+        }
+        if (!state.bidOnKitty) {
+            title.textContent = 'How will you use the kitty?';
+            const body = el('div', '');
+            body.style.fontSize = '14px';
+            body.style.color = 'var(--muted)';
+            body.innerHTML = `
+        <p><b>Normal:</b> Pick trump suit first, then take the 3 cards and discard back to 5.</p>
+        <p style="margin-top:10px"><b>Bid on the Kitty:</b> Keep only 1 card from your current hand, then see the kitty and choose trump.</p>
+      `;
+            inner.appendChild(body);
+            const row = el('div', 'button-row');
+            const btn1 = el('button', 'btn is-primary');
+            btn1.textContent = 'Normal';
+            btn1.addEventListener('click', () => this.cb.onKittyOptionClick('normal'));
+            row.appendChild(btn1);
+            const btn2 = el('button', 'btn');
+            btn2.textContent = 'Bid on the Kitty';
+            btn2.addEventListener('click', () => this.cb.onKittyOptionClick('one-card'));
+            row.appendChild(btn2);
+            inner.appendChild(row);
+        }
+        else {
+            title.textContent = 'Bid on the Kitty — Pick 1 card to KEEP';
+            const body = el('div', '');
+            body.style.fontSize = '13px';
+            body.style.color = 'var(--muted)';
+            body.textContent = 'Discard all others, then see the kitty and name trump.';
+            inner.appendChild(body);
+            const handDiv = el('div', 'modal__hand');
+            state.hands[HUMAN_SEAT].forEach((c, i) => {
+                const cardEl = cardFace(c);
+                cardEl.addEventListener('click', () => this.cb.onKittyKeepClick(i));
+                handDiv.appendChild(cardEl);
+            });
+            inner.appendChild(handDiv);
+        }
+        modal.appendChild(inner);
+        return modal;
+    }
     showTrumpSelectedKittyModal(state, trump) {
         // Replace kitty modal with discard modal.
         const existing = this.root.querySelector('.modal');
@@ -589,6 +649,7 @@ function phaseLabel(state) {
         case 'intro': return 'Welcome';
         case 'deal': return 'Deal';
         case 'bid': return 'Bidding';
+        case 'bid_on_kitty': return 'Kitty Choice';
         case 'kitty': return 'Kitty';
         case 'discard': return 'Discard';
         case 'play': return state.trump ? 'Playing' : 'Play';

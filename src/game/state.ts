@@ -41,9 +41,10 @@ export type Phase =
   | 'intro'
   | 'deal'
   | 'bid'
-  | 'kitty'      // bidder picks trump and uses the kitty
-  | 'discard'    // each seat may discard then draw replacements
-  | 'play'       // 5 tricks
+  | 'bid_on_kitty' // special choice after winning bid
+  | 'kitty'        // bidder picks trump and uses the kitty
+  | 'discard'      // each seat may discard then draw replacements
+  | 'play'         // 5 tricks
   | 'score'
   | 'gameOver';
 
@@ -67,6 +68,7 @@ export type GameState = {
   bidding: BiddingState | null;
   /** Resolved bid after the bid phase. */
   contract: { bidder: Seat; amount: BidAmount } | null;
+  bidOnKitty: boolean; // if true, bidder kept 1 card and chooses trump AFTER kitty
   trump: Suit | null;
 
   /** Discard phase: ordered list of seats yet to act, starting clockwise from dealer+1. */

@@ -9,6 +9,9 @@ import {
   resolveScorePhase,
   setTrumpAndTakeKitty,
   submitBidAction,
+  chooseNormalKitty,
+  chooseOneCardKitty,
+  finalizeOneCardKittyKeep,
 } from './game/flow';
 import {
   GameState,
@@ -78,11 +81,28 @@ const callbacks: UICallbacks = {
     if (!legal.includes(option as (typeof legal)[number])) return;
     submitBidAction(state, HUMAN_SEAT, option as Parameters<typeof submitBidAction>[2]);
     render();
-    if (ph() === 'kitty') {
-      if (state.contract?.bidder !== HUMAN_SEAT) scheduleAIKitty();
+    if (ph() === 'bid_on_kitty') {
+      if (state.contract?.bidder !== HUMAN_SEAT) scheduleAIBidOnKitty();
     } else if (ph() === 'bid') {
       scheduleAIBid();
     }
+  },
+
+  onKittyOptionClick(option) {
+    if (ph() !== 'bid_on_kitty') return;
+    if (option === 'normal') {
+      chooseNormalKitty(state);
+    } else {
+      chooseOneCardKitty(state);
+    }
+    render();
+  },
+
+  onKittyKeepClick(idx) {
+    if (ph() !== 'bid_on_kitty' || !state.bidOnKitty) return;
+    finalizeOneCardKittyKeep(state, idx);
+    render();
+    if (ph() === 'kitty' && state.contract?.bidder !== HUMAN_SEAT) scheduleAIKitty();
   },
 
   onTrumpClick(suit) {
@@ -140,6 +160,7 @@ render();
 // Resume AI if it's their turn on load
 function resumeAI() {
   if (ph() === 'bid') scheduleAIBid();
+  else if (ph() === 'bid_on_kitty' && state.contract?.bidder !== HUMAN_SEAT) scheduleAIBidOnKitty();
   else if (ph() === 'kitty' && state.contract?.bidder !== HUMAN_SEAT) scheduleAIKitty();
   else if (ph() === 'discard' && state.discardQueue[0] !== HUMAN_SEAT && state.discardQueue.length > 0) scheduleAIDiscard();
   else if (ph() === 'play' && state.toAct !== HUMAN_SEAT && state.toAct !== null) scheduleAIPlay();
@@ -162,9 +183,21 @@ async function scheduleAIBid(): Promise<void> {
     submitBidAction(state, bidder, option);
     render();
   }
-  if (ph() === 'kitty' && state.contract) {
-    if (state.contract.bidder !== HUMAN_SEAT) scheduleAIKitty();
+  if (ph() === 'bid_on_kitty' && state.contract) {
+    if (state.contract.bidder !== HUMAN_SEAT) scheduleAIBidOnKitty();
   }
+}
+
+async function scheduleAIBidOnKitty(): Promise<void> {
+  await delay(AI_BID_DELAY_MS);
+  if (ph() !== 'bid_on_kitty' || !state.contract) return;
+  const bidder = state.contract.bidder;
+  if (bidder === HUMAN_SEAT) return;
+
+  // AI always picks normal for now
+  chooseNormalKitty(state);
+  render();
+  if (ph() === 'kitty') scheduleAIKitty();
 }
 
 async function scheduleAIKitty(): Promise<void> {
