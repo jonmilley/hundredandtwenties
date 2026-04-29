@@ -32,16 +32,17 @@ body {
 }
 
 #app {
-  position: relative;
+  display: flex;
+  flex-direction: row;
   width: 100vw;
   height: 100vh;
+  position: relative;
 }
 
 /* ---------- Table ---------- */
 
 .table {
-  position: absolute;
-  inset: 0;
+  flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
@@ -49,7 +50,8 @@ body {
     '. north .'
     'west center east'
     '. south .';
-  padding: 16px 320px 16px 16px;
+  padding: 16px;
+  position: relative;
 }
 
 .seat {
@@ -282,20 +284,16 @@ body {
 /* ---------- Side panel ---------- */
 
 .panel {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 296px;
-  bottom: 16px;
+  width: 320px;
   background: var(--panel-bg);
-  border: 1px solid var(--panel-stroke);
-  border-radius: 12px;
+  border-left: 1px solid var(--panel-stroke);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   backdrop-filter: blur(6px);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .panel__title {
@@ -523,4 +521,80 @@ button.btn.is-small:hover {
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--panel-stroke);
+}
+
+/* ---------- Mobile Responsiveness ---------- */
+
+@media (max-width: 900px) {
+  html, body {
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  #app {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .table {
+    height: auto;
+    min-height: 500px;
+    aspect-ratio: 1 / 1;
+    padding: 8px;
+    flex: none;
+    width: 100%;
+  }
+
+  .panel {
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid var(--panel-stroke);
+    flex: none;
+    padding-bottom: 40px; /* Space for BMC */
+  }
+
+  .card {
+    width: 50px;
+    height: 70px;
+  }
+
+  .hand {
+    min-height: 80px;
+  }
+
+  .hand--south .card { margin-left: -20px; }
+  .hand--north .card { margin-left: -25px; }
+  .hand--east .card, .hand--west .card { margin-top: -35px; }
+
+  .center {
+    gap: 4px;
+  }
+
+  .hub__trump {
+    font-size: 20px;
+  }
+
+  .modal__inner {
+    padding: 16px;
+    max-width: 90vw;
+  }
+
+  .modal__hand .card {
+    width: 44px;
+    height: 60px;
+  }
+}
+
+@media (max-height: 600px) and (min-width: 901px) {
+  /* Landscape on short screens */
+  .card {
+    width: 50px;
+    height: 70px;
+  }
+  .hand {
+    min-height: 80px;
+  }
 }
