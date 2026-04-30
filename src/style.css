@@ -690,14 +690,29 @@ button.btn.suit-btn:hover:not(:disabled) {
     font-size: 20px;
   }
 
+  .modal {
+    padding: 10px;
+  }
+
   .modal__inner {
-    padding: 16px;
-    max-width: 90vw;
+    padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 10px;
+  }
+
+  .modal__title {
+    font-size: 15px;
+  }
+
+  .modal__hand {
+    gap: 4px;
   }
 
   .modal__hand .card {
-    width: 44px;
-    height: 60px;
+    width: 42px;
+    height: 58px;
   }
 }
 
