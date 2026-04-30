@@ -678,12 +678,9 @@ button.btn.is-text:hover {
   .hand--north .card { margin-left: -27px; }
   .hand--east .card, .hand--west .card { margin-top: -42px; }
 
-  .kitty-pile {
-    width: 52px;
-    height: 80px;
+  .kitty-pile-wrapper {
+    display: none;
   }
-  .kitty-pile .card:nth-child(2) { transform: translate(2px, -2px); }
-  .kitty-pile .card:nth-child(3) { transform: translate(4px, -4px); }
 
   .center {
     gap: 4px;
