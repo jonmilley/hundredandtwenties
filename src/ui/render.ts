@@ -422,8 +422,15 @@ export class Renderer {
     const modal = el('div', 'modal');
     const inner = el('div', 'modal__inner');
     const title = el('div', 'modal__title');
-    title.textContent = 'Name Trump & Use Kitty';
     inner.appendChild(title);
+
+    if (state.contract.bidder !== HUMAN_SEAT) {
+      title.textContent = `${SEAT_NAMES[state.contract.bidder]} is naming trump…`;
+      modal.appendChild(inner);
+      return modal;
+    }
+
+    title.textContent = 'Name Trump & Use Kitty';
 
     const hint = el('div', '');
     hint.style.fontSize = '13px';
