@@ -16,6 +16,7 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": true,
     "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
     "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src", "test"]
