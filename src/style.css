@@ -486,11 +486,11 @@ button.btn.is-text:hover {
 }
 .suit-btn .suit-glyph.is-red { color: var(--red); }
 .suit-btn .suit-glyph.is-black { color: var(--black); }
-.suit-btn {
+button.btn.suit-btn {
   background: var(--card-bg);
   color: var(--black);
 }
-.suit-btn:hover:not(:disabled) {
+button.btn.suit-btn:hover:not(:disabled) {
   background: #fff;
 }
 
