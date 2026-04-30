@@ -3,6 +3,7 @@ import { legalBidOptions } from '../game/bidding';
 import { scoreHand, applyEndgameRule } from '../game/scoring';
 import { GameState, HUMAN_SEAT, Seat, teamOf } from '../game/state';
 import { legalPlayIndices } from '../game/play';
+import { isTrump } from '../game/ranking';
 
 export type RenderOptions = {
   trickWinner?: Seat;
@@ -32,6 +33,7 @@ export class Renderer {
   private cb: UICallbacks;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
   private discardSelected = new Set<number>();
+  private discardAutoInitDone = false;
   private logExpanded = false;
 
   constructor(root: HTMLElement, cb: UICallbacks) {
@@ -43,6 +45,19 @@ export class Renderer {
     // Clear discard selection whenever it's no longer the human's turn to discard.
     if (state.phase !== 'discard' || state.discardQueue[0] !== HUMAN_SEAT) {
       this.discardSelected.clear();
+      this.discardAutoInitDone = false;
+    }
+    // Auto-select all non-trump cards the first time the human reaches discard phase.
+    if (
+      state.phase === 'discard' &&
+      state.discardQueue[0] === HUMAN_SEAT &&
+      state.trump &&
+      !this.discardAutoInitDone
+    ) {
+      state.hands[HUMAN_SEAT].forEach((c, i) => {
+        if (!isTrump(c, state.trump!)) this.discardSelected.add(i);
+      });
+      this.discardAutoInitDone = true;
     }
     this.root.innerHTML = '';
     const app = this.root;
@@ -480,12 +495,18 @@ export class Renderer {
 
     const combined = [...state.hands[state.contract.bidder], ...state.kitty];
     const minDiscard = Math.max(0, combined.length - 5);
-    const selected = new Set<number>();
+
+    // Pre-select all non-trump cards; player can deselect to keep.
+    const selected = new Set<number>(
+      combined.map((c, i) => ({ c, i }))
+        .filter(({ c }) => !isTrump(c, trump))
+        .map(({ i }) => i)
+    );
 
     const hint = el('div', '');
     hint.style.fontSize = '13px';
     hint.style.color = 'var(--muted)';
-    hint.textContent = `Discard at least ${minDiscard} cards — extras get replaced from the deck.`;
+    hint.textContent = `Non-trump cards are pre-selected for discard. Click to keep any you want.`;
     inner.appendChild(hint);
 
     const status = el('div', '');
@@ -505,7 +526,7 @@ export class Renderer {
       const draws = n - minDiscard;
       confirmBtn.disabled = n < minDiscard;
       if (n === 0) {
-        status.textContent = `Select at least ${minDiscard} cards`;
+        status.textContent = `Select at least ${minDiscard} cards to discard`;
       } else if (draws > 0) {
         status.textContent = `Discarding ${n} — will draw ${draws} replacement${draws > 1 ? 's' : ''} from deck`;
       } else {
@@ -516,6 +537,7 @@ export class Renderer {
 
     combined.forEach((c, i) => {
       const cardEl = cardFace(c);
+      if (selected.has(i)) cardEl.classList.add('is-selected');
       cardEl.addEventListener('click', () => {
         if (selected.has(i)) selected.delete(i);
         else selected.add(i);
