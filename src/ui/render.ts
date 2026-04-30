@@ -116,6 +116,24 @@ export class Renderer {
     }
     div.appendChild(label);
 
+    // Kitty pile — shown next to dealer during bidding
+    if (
+      state.dealer === seat &&
+      state.kitty.length > 0 &&
+      (state.phase === 'bid' || state.phase === 'bid_on_kitty')
+    ) {
+      const pileWrapper = el('div', `kitty-pile-wrapper`);
+      const pileLabel = el('div', 'kitty-pile__label');
+      pileLabel.textContent = 'Kitty';
+      pileWrapper.appendChild(pileLabel);
+      const pile = el('div', 'kitty-pile');
+      for (let i = 0; i < state.kitty.length; i++) {
+        pile.appendChild(cardBack());
+      }
+      pileWrapper.appendChild(pile);
+      div.appendChild(pileWrapper);
+    }
+
     // Hand of cards
     const hand = el('div', `hand hand--${dir}`);
     const cards = state.hands[seat];
@@ -410,18 +428,18 @@ export class Renderer {
     const hint = el('div', '');
     hint.style.fontSize = '13px';
     hint.style.color = 'var(--muted)';
-    
+
     const handRow = el('div', 'modal__hand');
     const bidder = state.contract.bidder;
-    const cardsToShow = state.bidOnKitty 
-      ? [...state.hands[bidder], ...state.kitty]
-      : state.hands[bidder];
-    cardsToShow.forEach(c => handRow.appendChild(cardFace(c)));
 
     if (state.bidOnKitty) {
-      hint.textContent = 'You chose Bid on the Kitty. Here are the 3 cards. Now name trump:';
+      // Bid on the Kitty: player already kept 1 card; reveal kitty and pick trump.
+      hint.textContent = 'You chose Bid on the Kitty. Here are the 3 kitty cards added to your kept card. Now name trump:';
+      [...state.hands[bidder], ...state.kitty].forEach(c => handRow.appendChild(cardFace(c)));
     } else {
-      hint.textContent = `Kitty cards added to your hand (${state.kitty.length}). Choose trump, then discard at least ${state.kitty.length} — extra discards get replaced from the deck.`;
+      // Normal: player picks trump before seeing the kitty.
+      hint.textContent = `Pick a trump suit. You'll then see the ${state.kitty.length} kitty cards and discard down to 5.`;
+      state.hands[bidder].forEach(c => handRow.appendChild(cardFace(c)));
     }
     inner.appendChild(hint);
     inner.appendChild(handRow);

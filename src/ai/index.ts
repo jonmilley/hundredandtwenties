@@ -169,8 +169,11 @@ function hasKingProtection(hand: Card[], king: Card): boolean {
  * Pick a card to play given the current trick situation.
  *
  * Strategy:
- *  - If leading: lead a top trump (especially 5/J/AH) early to draw out trumps;
- *    otherwise lead an off-ace, otherwise the lowest non-trump.
+ *  - Run-in rule: the seat immediately before the bidder must play their best
+ *    trump whenever the bidder hasn't yet played in the trick, to force the
+ *    bidder to use a trump.
+ *  - If leading: lead an off-ace, otherwise the lowest non-trump (never open
+ *    with trump when a non-trump option exists).
  *  - If following:
  *    - If a partner is currently winning the trick, throw the lowest legal card
  *      that doesn't trump the partner.
@@ -184,6 +187,22 @@ export function aiPickCard(state: GameState, seat: Seat): Card {
   const trickCards = state.currentTrick.plays.map((p) => p.card);
   const legal = legalPlayIndices(hand, trickCards, trump);
   const legalCards = legal.map((i) => hand[i]!);
+
+  // Run-in rule: seat (bidder+3)%4 plays immediately before the bidder in every
+  // trick. When the bidder hasn't played yet, this seat must lead with their best
+  // trump to pressure the bidder.
+  if (state.contract) {
+    const bidder = state.contract.bidder;
+    const runInSeat = ((bidder + 3) % 4) as Seat;
+    const bidderHasPlayed = state.currentTrick.plays.some((p) => p.seat === bidder);
+    if (seat === runInSeat && !bidderHasPlayed) {
+      const trumpCards = legalCards.filter((c) => isTrump(c, trump));
+      if (trumpCards.length > 0) {
+        trumpCards.sort((a, b) => cardSortValue(b, trump) - cardSortValue(a, trump));
+        return trumpCards[0]!;
+      }
+    }
+  }
 
   if (trickCards.length === 0) {
     return chooseLead(state, seat, legalCards);
@@ -211,17 +230,9 @@ export function aiPickCard(state: GameState, seat: Seat): Card {
   return lowestLegalCard(legalCards, trump, trickCards[0]!.suit);
 }
 
-function chooseLead(state: GameState, _seat: Seat, legalCards: Card[]): Card {
-  const trump = state.trump!;
-  // Count remaining trumps held by opponents (rough estimate from cards seen).
-  // Simple heuristic: if we have 3+ trumps including a top trump, lead trump.
-  const trumps = legalCards.filter((c) => isTrump(c, trump));
-  const topTrump = trumps.find((c) => {
-    const tp = trumpPower(c, trump)!;
-    return tp >= 98; // 5, J, AH
-  });
-  const earlyHand = state.completedTricks.length < 2;
-  if (topTrump && earlyHand) return topTrump;
+function chooseLead(_state: GameState, _seat: Seat, legalCards: Card[]): Card {
+  const trump = _state.trump!;
+  // Never open with trump when a non-trump option exists.
   // Lead an off-ace if available (red ace of a non-trump suit; AH is trump).
   const offAce = legalCards.find((c) => c.rank === 'A' && !isTrump(c, trump) && !isAceOfHearts(c));
   if (offAce) return offAce;
@@ -232,8 +243,8 @@ function chooseLead(state: GameState, _seat: Seat, legalCards: Card[]): Card {
     return nonTrumps[0]!;
   }
   // All trumps. Lead the lowest trump.
-  trumps.sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
-  return trumps[0]!;
+  const allTrumps = legalCards.slice().sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
+  return allTrumps[0]!;
 }
 
 function currentTrickWinner(state: GameState): { winningSeat: Seat | null; winningCard: Card } {

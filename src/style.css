@@ -45,7 +45,7 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1.6fr 1fr;
   grid-template-areas:
     '. north .'
     'west center east'
@@ -75,6 +75,44 @@ body {
 .seat--west {
   grid-area: west;
 }
+
+/* ---------- Kitty pile ---------- */
+
+.kitty-pile-wrapper {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+.seat--north .kitty-pile-wrapper { bottom: 0; right: 12px; }
+.seat--south .kitty-pile-wrapper { top: 0; right: 12px; }
+.seat--east  .kitty-pile-wrapper { left: 4px; top: 50%; transform: translateY(-50%); }
+.seat--west  .kitty-pile-wrapper { right: 4px; top: 50%; transform: translateY(-50%); }
+
+.kitty-pile__label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kitty-pile {
+  position: relative;
+  width: 84px;
+  height: 130px;
+}
+
+.kitty-pile .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.kitty-pile .card:nth-child(2) { transform: translate(3px, -3px); }
+.kitty-pile .card:nth-child(3) { transform: translate(6px, -6px); }
+
+/* ---------- Seat labels ---------- */
 
 .seat__label {
   display: flex;
@@ -128,18 +166,18 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 130px;
+  min-height: 150px;
 }
 
 .hand--south .card {
-  margin-left: -28px;
+  margin-left: -34px;
 }
 .hand--south .card:first-child {
   margin-left: 0;
 }
 
 .hand--north .card {
-  margin-left: -36px;
+  margin-left: -44px;
   transform: rotate(180deg);
 }
 .hand--north .card:first-child {
@@ -152,7 +190,7 @@ body {
 }
 .hand--east .card,
 .hand--west .card {
-  margin-top: -52px;
+  margin-top: -68px;
   transform: rotate(90deg);
 }
 .hand--east .card:first-child,
@@ -163,9 +201,11 @@ body {
 /* ---------- Card ---------- */
 
 .card {
-  width: 72px;
-  height: 100px;
-  border-radius: 5px;
+  width: 84px;
+  height: 118px;
+  border-radius: 6px;
+  background: var(--card-bg);
+  padding: 4px;
   box-shadow: 0 4px 10px var(--shadow);
   position: relative;
   cursor: default;
@@ -178,6 +218,7 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: 2px;
 }
 
 @keyframes dealIn {
@@ -624,17 +665,25 @@ button.btn.is-text:hover {
   }
 
   .card {
-    width: 50px;
-    height: 70px;
+    width: 52px;
+    height: 73px;
+    padding: 2px;
   }
 
   .hand {
-    min-height: 70px;
+    min-height: 73px;
   }
 
-  .hand--south .card { margin-left: -20px; }
-  .hand--north .card { margin-left: -25px; }
-  .hand--east .card, .hand--west .card { margin-top: -35px; }
+  .hand--south .card { margin-left: -21px; }
+  .hand--north .card { margin-left: -27px; }
+  .hand--east .card, .hand--west .card { margin-top: -42px; }
+
+  .kitty-pile {
+    width: 52px;
+    height: 80px;
+  }
+  .kitty-pile .card:nth-child(2) { transform: translate(2px, -2px); }
+  .kitty-pile .card:nth-child(3) { transform: translate(4px, -4px); }
 
   .center {
     gap: 4px;
@@ -658,10 +707,11 @@ button.btn.is-text:hover {
 @media (max-height: 600px) and (min-width: 901px) {
   /* Landscape on short screens */
   .card {
-    width: 50px;
-    height: 70px;
+    width: 52px;
+    height: 73px;
+    padding: 2px;
   }
   .hand {
-    min-height: 70px;
+    min-height: 73px;
   }
 }
