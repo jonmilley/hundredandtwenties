@@ -72,10 +72,10 @@ export function scoreHand(
 }
 
 /**
- * Apply the "must bid to win" rule at score >= 100. If a defending team would
- * cross 120 from earned tricks alone, their score is capped at 119 instead.
+ * Apply the "bid to go out" rule. A defending team that would reach 120 is
+ * capped at 115 — you must win the bid to win the game.
  *
- * If the in-hole variant is enabled and any opposing team is below 0, the cap
+ * If the in-hole variant is enabled and the opposing team is below 0, the cap
  * is waived.
  */
 export function applyEndgameRule(
@@ -89,17 +89,16 @@ export function applyEndgameRule(
   if (!contract) return next;
 
   for (const team of [0, 1] as const) {
-    if (current[team] < 100) continue; // rule only applies at 100+
-    if (next[team] < 120) continue; // not crossing 120 anyway
+    if (next[team] < 120) continue; // not reaching 120, nothing to cap
 
     const isBidderTeam = teamOf(contract.bidder) === team;
-    if (isBidderTeam) continue; // crossed via successful bid -> ok
+    if (isBidderTeam) continue; // won the bid — allowed to go out
 
-    // Defending team would cross 120 via tricks alone. Apply cap unless waived.
+    // Defending team would reach 120. Cap at 115 unless the variant waives it.
     const otherTeam = team === 0 ? 1 : 0;
-    if (inHoleVariant && next[otherTeam] < 0) continue; // variant waives
+    if (inHoleVariant && next[otherTeam] < 0) continue;
 
-    next[team] = 119;
+    next[team] = 115;
   }
 
   return next;
