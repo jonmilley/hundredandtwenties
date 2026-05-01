@@ -59,13 +59,12 @@ export class Renderer {
       });
       this.discardAutoInitDone = true;
     }
-    this.root.innerHTML = '';
-    const app = this.root;
+
+    const fragment = document.createDocumentFragment();
+    const dealCounter = { n: 0 };
 
     const table = el('div', 'table');
-    app.appendChild(table);
-
-    const dealCounter = { n: 0 };
+    fragment.appendChild(table);
 
     // North seat (partner, seat 2)
     table.appendChild(this.renderSeat(state, 2, options, dealCounter));
@@ -79,24 +78,28 @@ export class Renderer {
     table.appendChild(this.renderSeat(state, 0, options, dealCounter));
 
     // Side panel
-    app.appendChild(this.renderPanel(state));
+    fragment.appendChild(this.renderPanel(state));
 
     // Overlays
     if (state.phase === 'intro') {
-      app.appendChild(this.renderIntroModal());
+      fragment.appendChild(this.renderIntroModal());
     }
     if (state.phase === 'bid_on_kitty') {
-      app.appendChild(this.renderBidOnKittyModal(state));
+      fragment.appendChild(this.renderBidOnKittyModal(state));
     }
     if (state.phase === 'kitty') {
-      app.appendChild(this.renderKittyModal(state));
+      fragment.appendChild(this.renderKittyModal(state));
     }
     if (state.phase === 'score') {
-      app.appendChild(this.renderScoreModal(state));
+      fragment.appendChild(this.renderScoreModal(state));
     }
     if (state.phase === 'gameOver') {
-      app.appendChild(this.renderGameOverModal(state));
+      fragment.appendChild(this.renderGameOverModal(state));
     }
+
+    // Final DOM update
+    this.root.innerHTML = '';
+    this.root.appendChild(fragment);
   }
 
   private renderSeat(state: GameState, seat: Seat, options: RenderOptions, dealCounter: { n: number }): HTMLElement {

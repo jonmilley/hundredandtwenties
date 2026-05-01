@@ -31,7 +31,7 @@ import {
 } from './ai/index';
 import { Renderer, UICallbacks } from './ui/render';
 
-const AI_BID_DELAY_MS = 850;
+const AI_BID_DELAY_MS = 1100;
 const AI_CARD_DELAY_MS = 800;
 const AI_DISCARD_DELAY_MS = 500;
 const TRICK_WINNER_PAUSE_MS = 1300;
