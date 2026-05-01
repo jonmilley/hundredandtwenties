@@ -1,4 +1,4 @@
-import { Card, SUITS, Suit, isAceOfHearts } from '../game/cards';
+import { Card, cardId, RANKS, Suit, SUITS, isAceOfHearts } from '../game/cards';
 import { isTrump, nonTrumpPower, trumpPower } from '../game/ranking';
 import { legalPlayIndices } from '../game/play';
 import { BidAmount, BidOption, GameState, Seat, partnerOf, teamOf } from '../game/state';
@@ -81,15 +81,30 @@ export function aiBid(state: GameState, seat: Seat): BidOption {
   const value = best.value;
   const legal = legalBidOptions(state.bidding, state.dealer, hand);
 
+  // Context adjustments before thresholds.
+  let adjustedValue = value;
+
+  // Holding 2+ of {5T, JT, AH}: top trumps protect each other, making the hand
+  // more reliable than the raw sum suggests.
+  const topTrumpCount = hand.filter((c) => {
+    const tp = trumpPower(c, best.suit);
+    return tp !== null && tp >= 98;
+  }).length;
+  if (topTrumpCount >= 2) adjustedValue += 2;
+
+  // Partner bid signal: their strength complements ours.
+  const pBid = partnerBidAmount(state, seat);
+  if (pBid !== null && pBid >= 25) adjustedValue += 2;
+  else if (pBid !== null) adjustedValue += 1;
+
   // What can we afford to bid given the standing high?
   const standing = state.bidding.highBid;
   const isDealer = seat === state.dealer;
 
-  // If standing is 0, freely choose.
   let target: BidAmount | 'pass' = 'pass';
-  if (value >= 30) target = 30;
-  else if (value >= 22) target = 25;
-  else if (value >= 17) target = 20;
+  if (adjustedValue >= 30) target = 30;
+  else if (adjustedValue >= 22) target = 25;
+  else if (adjustedValue >= 17) target = 20;
 
   // Rule: if we MUST bid (because of a 5) but our target was pass,
   // we must choose the lowest legal numeric bid.
@@ -140,29 +155,32 @@ export function aiBidderDiscard(hand: Card[], kitty: Card[], trump: Suit): Card[
   return discards;
 }
 
-/** Non-bidder discard: throw all non-trumps below A, and keep at most 5. */
+/**
+ * Non-bidder discard: keep all trumps and side-suit aces; discard everything
+ * else. Discarding a whole suit creates a void for ruffing, which is worth
+ * more than holding low/mid cards in a suit.
+ */
 export function aiNonBidderDiscard(hand: Card[], trump: Suit): Card[] {
-  // Discard non-trump cards that are unlikely to win tricks. Keep all trumps,
-  // keep aces of side suits.
-  const discards: Card[] = [];
-  for (const c of hand) {
-    if (isTrump(c, trump)) continue;
-    if (c.rank === 'A') continue;
-    if (c.rank === 'K' && hasKingProtection(hand, c)) continue; // keep K with backup
-    discards.push(c);
-  }
-  // Limit to a reasonable number; drawing too many on a thin stock can be bad.
-  // Allow up to 4 discards (keep at least 1 + your trumps).
-  const maxDiscards = Math.min(discards.length, 4);
-  return discards.slice(0, maxDiscards);
-}
+  const sideCards = hand.filter((c) => !isTrump(c, trump));
 
-function hasKingProtection(hand: Card[], king: Card): boolean {
-  // King is safer if there's another card of the same suit (Q or J) with it.
-  return hand.some(
-    (c) =>
-      c.suit === king.suit && c.rank !== king.rank && (c.rank === 'Q' || c.rank === 'J'),
-  );
+  const bySuit = new Map<Suit, Card[]>();
+  for (const c of sideCards) {
+    if (!bySuit.has(c.suit)) bySuit.set(c.suit, []);
+    bySuit.get(c.suit)!.push(c);
+  }
+
+  const discards: Card[] = [];
+  for (const [, cards] of bySuit) {
+    const ace = cards.find((c) => c.rank === 'A');
+    if (ace) {
+      // Keep the ace; discard all other cards in this suit.
+      discards.push(...cards.filter((c) => c !== ace));
+    } else {
+      // No ace: discard the entire suit to create a void for ruffing.
+      discards.push(...cards);
+    }
+  }
+  return discards;
 }
 
 /**
@@ -230,21 +248,73 @@ export function aiPickCard(state: GameState, seat: Seat): Card {
   return lowestLegalCard(legalCards, trump, trickCards[0]!.suit);
 }
 
-function chooseLead(_state: GameState, _seat: Seat, legalCards: Card[]): Card {
-  const trump = _state.trump!;
-  // Never open with trump when a non-trump option exists.
-  // Lead an off-ace if available (red ace of a non-trump suit; AH is trump).
+function chooseLead(state: GameState, seat: Seat, legalCards: Card[]): Card {
+  const trump = state.trump!;
+  const dead = getDeadCards(state);
+  const partner = partnerOf(seat);
+  const [opp1, opp2] = opponentsOf(seat);
+
+  // Bid-30 rule: when opposing a 30-bid, the first lead of the hand must be trump.
+  if (
+    state.contract?.amount === 30 &&
+    state.completedTricks.length === 0 &&
+    state.currentTrick!.plays.length === 0 &&
+    teamOf(seat) !== teamOf(state.contract.bidder)
+  ) {
+    const trumpCards = legalCards.filter((c) => isTrump(c, trump));
+    if (trumpCards.length > 0) {
+      return trumpCards.slice().sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump))[0]!;
+    }
+  }
+
+  // Off-ace lead (AH is trump, excluded).
   const offAce = legalCards.find((c) => c.rank === 'A' && !isTrump(c, trump) && !isAceOfHearts(c));
   if (offAce) return offAce;
-  // Otherwise lead the lowest non-trump.
-  const nonTrumps = legalCards.filter((c) => !isTrump(c, trump));
-  if (nonTrumps.length > 0) {
-    nonTrumps.sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
-    return nonTrumps[0]!;
+
+  // Infer void suits from completed tricks.
+  const partnerVoids = inferVoids(state, partner);
+  const opp1Voids = inferVoids(state, opp1);
+  const opp2Voids = inferVoids(state, opp2);
+
+  // Partner ruff setup: lead a suit where partner has shown a void, provided we
+  // won't be feeding both opponents an equal ruff opportunity at the same time.
+  const ruffLeads = legalCards.filter(
+    (c) =>
+      !isTrump(c, trump) &&
+      partnerVoids.has(c.suit) &&
+      !(opp1Voids.has(c.suit) && opp2Voids.has(c.suit)),
+  );
+  if (ruffLeads.length > 0) {
+    ruffLeads.sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
+    return ruffLeads[0]!;
   }
-  // All trumps. Lead the lowest trump.
-  const allTrumps = legalCards.slice().sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
-  return allTrumps[0]!;
+
+  // Bidder leads best trump when it's the highest remaining — draws out enemy trumps.
+  if (state.contract && seat === state.contract.bidder) {
+    const myHandIds = new Set(state.hands[seat].map(cardId));
+    const ownTrumps = legalCards
+      .filter((c) => isTrump(c, trump))
+      .sort((a, b) => trumpPower(b, trump)! - trumpPower(a, trump)!);
+    if (ownTrumps.length > 0 && isHighestRemainingTrump(ownTrumps[0]!, trump, dead, myHandIds)) {
+      return ownTrumps[0]!;
+    }
+  }
+
+  // Lead a non-trump, avoiding suits where both opponents have shown a void
+  // (both would ruff).
+  const safeNonTrumps = legalCards.filter(
+    (c) => !isTrump(c, trump) && !(opp1Voids.has(c.suit) && opp2Voids.has(c.suit)),
+  );
+  const nonTrumpPool = safeNonTrumps.length > 0
+    ? safeNonTrumps
+    : legalCards.filter((c) => !isTrump(c, trump));
+  if (nonTrumpPool.length > 0) {
+    nonTrumpPool.sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
+    return nonTrumpPool[0]!;
+  }
+
+  // All trumps: lead lowest.
+  return legalCards.slice().sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump))[0]!;
 }
 
 function currentTrickWinner(state: GameState): { winningSeat: Seat | null; winningCard: Card } {
@@ -286,13 +356,18 @@ function cardSortValue(c: Card, trump: Suit): number {
 }
 
 function lowestLegalCard(legalCards: Card[], trump: Suit, ledSuit: Suit): Card {
-  // Prefer to dump non-trumps first; never waste a high trump if a low non-trump is available.
   const sorted = legalCards.slice().sort((a, b) => {
     const aT = isTrump(a, trump) ? 1 : 0;
     const bT = isTrump(b, trump) ? 1 : 0;
     if (aT !== bT) return aT - bT; // non-trumps first
-    if (aT === 1) return cardSortValue(a, trump) - cardSortValue(b, trump);
-    // Both non-trumps: lowest of led-suit comes first, then anything off-suit.
+    if (aT === 1) {
+      // Never throw a renege-eligible trump (5T/JT/AH) when a regular trump is available.
+      const aRenege = trumpPower(a, trump)! >= 98 ? 1 : 0;
+      const bRenege = trumpPower(b, trump)! >= 98 ? 1 : 0;
+      if (aRenege !== bRenege) return aRenege - bRenege;
+      return cardSortValue(a, trump) - cardSortValue(b, trump);
+    }
+    // Both non-trumps: lowest of led-suit first, then off-suit.
     const aOnLed = a.suit === ledSuit ? 0 : 1;
     const bOnLed = b.suit === ledSuit ? 0 : 1;
     if (aOnLed !== bOnLed) return aOnLed - bOnLed;
@@ -307,10 +382,92 @@ function lowestNonTrumpOrLowestLegal(legalCards: Card[], trump: Suit): Card {
     nonTrumps.sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
     return nonTrumps[0]!;
   }
-  // Forced to play a trump even though partner is winning.
-  const sorted = legalCards.slice().sort((a, b) => cardSortValue(a, trump) - cardSortValue(b, trump));
+  // Forced to play trump with partner winning: throw cheapest non-renege trump first.
+  const sorted = legalCards.slice().sort((a, b) => {
+    const aRenege = trumpPower(a, trump)! >= 98 ? 1 : 0;
+    const bRenege = trumpPower(b, trump)! >= 98 ? 1 : 0;
+    if (aRenege !== bRenege) return aRenege - bRenege;
+    return cardSortValue(a, trump) - cardSortValue(b, trump);
+  });
   return sorted[0]!;
 }
 
-// Avoid unused-import warning if some helpers aren't used yet.
-void teamOf;
+/** Cards from completed tricks and the current trick in progress. */
+function getDeadCards(state: GameState): Set<string> {
+  const dead = new Set<string>();
+  for (const t of state.completedTricks) {
+    for (const p of t.plays) dead.add(cardId(p.card));
+  }
+  if (state.currentTrick) {
+    for (const p of state.currentTrick.plays) dead.add(cardId(p.card));
+  }
+  return dead;
+}
+
+/**
+ * Returns true if no trump with higher power than `card` remains unaccounted
+ * for (i.e., every such trump is either dead or already in `myHandIds`).
+ */
+function isHighestRemainingTrump(
+  card: Card,
+  trump: Suit,
+  dead: Set<string>,
+  myHandIds: Set<string>,
+): boolean {
+  const myPower = trumpPower(card, trump);
+  if (myPower === null) return false;
+  for (const rank of RANKS) {
+    const candidate: Card = { rank, suit: trump };
+    const tp = trumpPower(candidate, trump);
+    if (tp !== null && tp > myPower) {
+      const key = cardId(candidate);
+      if (!dead.has(key) && !myHandIds.has(key)) return false;
+    }
+  }
+  // AH is always trump even when trump is not Hearts.
+  if (trump !== 'H') {
+    const ah: Card = { rank: 'A', suit: 'H' };
+    const ahPower = trumpPower(ah, trump)!; // 98
+    if (ahPower > myPower && !dead.has(cardId(ah)) && !myHandIds.has(cardId(ah))) return false;
+  }
+  return true;
+}
+
+/** The two seats on the opposing team from `seat`. */
+function opponentsOf(seat: Seat): [Seat, Seat] {
+  return [((seat + 1) % 4) as Seat, ((seat + 3) % 4) as Seat];
+}
+
+/**
+ * Suits where `target` has likely voided: every trick where a non-trump was
+ * led and `target` responded with a trump is treated as evidence of a void in
+ * that led suit.
+ */
+function inferVoids(state: GameState, target: Seat): Set<Suit> {
+  const trump = state.trump!;
+  const voids = new Set<Suit>();
+  for (const trick of state.completedTricks) {
+    const ledCard = trick.plays[0]?.card;
+    if (!ledCard || isTrump(ledCard, trump)) continue;
+    const play = trick.plays.find((p) => p.seat === target);
+    if (play && isTrump(play.card, trump)) {
+      voids.add(ledCard.suit);
+    }
+  }
+  return voids;
+}
+
+/**
+ * Returns the highest numeric amount partner bid in the current auction, or
+ * null if partner passed or hasn't acted yet.
+ */
+function partnerBidAmount(state: GameState, seat: Seat): BidAmount | null {
+  if (!state.bidding) return null;
+  const partner = partnerOf(seat);
+  for (const entry of state.bidding.history) {
+    if (entry.seat === partner && entry.option !== 'pass') {
+      return entry.option as BidAmount;
+    }
+  }
+  return null;
+}
