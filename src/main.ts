@@ -155,7 +155,27 @@ const callbacks: UICallbacks = {
 };
 
 const renderer = new Renderer(appEl, callbacks);
-render();
+
+function handleRouting() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#/play')) {
+    renderer.setView('GAME');
+    // If we're navigated to play but still in intro phase, advance to deal
+    if (state.phase === 'intro') {
+      state.phase = 'deal';
+    }
+  } else if (hash.startsWith('#/stats')) {
+    renderer.setView('STATS');
+  } else {
+    renderer.setView('HOME');
+    // If we navigate back home, we don't necessarily reset the game, 
+    // but we ensure the phase is reflected if it was just started.
+  }
+  render();
+}
+
+window.addEventListener('hashchange', handleRouting);
+handleRouting();
 
 // Resume AI if it's their turn on load
 function resumeAI() {

@@ -28,6 +28,8 @@ export type UICallbacks = {
   onKittyKeepClick: (cardIdx: number) => void;
 };
 
+export type View = 'HOME' | 'GAME' | 'STATS';
+
 export class Renderer {
   private root: HTMLElement;
   private cb: UICallbacks;
@@ -35,13 +37,84 @@ export class Renderer {
   private discardSelected = new Set<number>();
   private discardAutoInitDone = false;
   private logExpanded = false;
+  private currentView: View = 'HOME';
 
   constructor(root: HTMLElement, cb: UICallbacks) {
     this.root = root;
     this.cb = cb;
   }
 
+  setView(view: View): void {
+    this.currentView = view;
+  }
+
   render(state: GameState, options: RenderOptions = {}): void {
+    this.root.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    if (this.currentView === 'HOME') {
+      fragment.appendChild(this.renderHomeView(state));
+    } else if (this.currentView === 'GAME') {
+      fragment.appendChild(this.renderGameView(state, options));
+    }
+
+    this.root.appendChild(fragment);
+  }
+
+  private renderHomeView(state: GameState): HTMLElement {
+    const view = el('div', 'view view--home');
+    
+    const content = el('div', 'home-content');
+    
+    const title = el('h1', 'home-title');
+    title.textContent = 'Hundred And Twenties';
+    content.appendChild(title);
+
+    const desc = el('p', 'home-desc');
+    desc.innerHTML = 'A classic Newfoundland trick-taking game.<br>First team to 120 points wins!';
+    content.appendChild(desc);
+
+    const actions = el('div', 'home-actions');
+    
+    const startBtn = el('button', 'btn is-primary is-large') as HTMLButtonElement;
+    startBtn.textContent = 'Start New Game';
+    startBtn.addEventListener('click', () => {
+      window.location.hash = '#/play';
+      this.cb.onIntroClose();
+    });
+    actions.appendChild(startBtn);
+
+    if (state.handsPlayed > 0 || state.phase !== 'intro') {
+      const resumeBtn = el('button', 'btn') as HTMLButtonElement;
+      resumeBtn.textContent = 'Resume Game';
+      resumeBtn.addEventListener('click', () => {
+        window.location.hash = '#/play';
+        if (state.phase === 'intro') this.cb.onIntroClose();
+      });
+      actions.appendChild(resumeBtn);
+    }
+
+    content.appendChild(actions);
+
+    const rulesSection = el('div', 'home-rules');
+    rulesSection.innerHTML = `
+      <h3>Rules at a Glance</h3>
+      <ul>
+        <li><b>Bidding:</b> Players bid 20-30 points. High bidder picks trump and takes the 3-card kitty.</li>
+        <li><b>Trump Ranking:</b> 5 (High), Jack, Ace of Hearts, Ace of Trump, K, Q, 10...</li>
+        <li><b>Off-suit Ranking:</b> "Highest in Red, Lowest in Black"</li>
+        <li><b>Scoring:</b> Each trick is 5 points. Best trump is +5.</li>
+      </ul>
+    `;
+    content.appendChild(rulesSection);
+
+    view.appendChild(content);
+    return view;
+  }
+
+  private renderGameView(state: GameState, options: RenderOptions): HTMLElement {
+    const view = el('div', 'view view--game');
+    
     // Clear discard selection whenever it's no longer the human's turn to discard.
     if (state.phase !== 'discard' || state.discardQueue[0] !== HUMAN_SEAT) {
       this.discardSelected.clear();
@@ -60,11 +133,10 @@ export class Renderer {
       this.discardAutoInitDone = true;
     }
 
-    const fragment = document.createDocumentFragment();
-    const dealCounter = { n: 0 };
-
     const table = el('div', 'table');
-    fragment.appendChild(table);
+    view.appendChild(table);
+
+    const dealCounter = { n: 0 };
 
     // North seat (partner, seat 2)
     table.appendChild(this.renderSeat(state, 2, options, dealCounter));
@@ -78,28 +150,23 @@ export class Renderer {
     table.appendChild(this.renderSeat(state, 0, options, dealCounter));
 
     // Side panel
-    fragment.appendChild(this.renderPanel(state));
+    view.appendChild(this.renderPanel(state));
 
     // Overlays
-    if (state.phase === 'intro') {
-      fragment.appendChild(this.renderIntroModal());
-    }
     if (state.phase === 'bid_on_kitty') {
-      fragment.appendChild(this.renderBidOnKittyModal(state));
+      view.appendChild(this.renderBidOnKittyModal(state));
     }
     if (state.phase === 'kitty') {
-      fragment.appendChild(this.renderKittyModal(state));
+      view.appendChild(this.renderKittyModal(state));
     }
     if (state.phase === 'score') {
-      fragment.appendChild(this.renderScoreModal(state));
+      view.appendChild(this.renderScoreModal(state));
     }
     if (state.phase === 'gameOver') {
-      fragment.appendChild(this.renderGameOverModal(state));
+      view.appendChild(this.renderGameOverModal(state));
     }
 
-    // Final DOM update
-    this.root.innerHTML = '';
-    this.root.appendChild(fragment);
+    return view;
   }
 
   private renderSeat(state: GameState, seat: Seat, options: RenderOptions, dealCounter: { n: number }): HTMLElement {
@@ -640,48 +707,6 @@ export class Renderer {
     return modal;
   }
 
-  private renderIntroModal(): HTMLElement {
-    const modal = el('div', 'modal');
-    const inner = el('div', 'modal__inner');
-    inner.style.maxWidth = '500px';
-    inner.style.textAlign = 'left';
-
-    const title = el('div', 'modal__title');
-    title.textContent = 'Hundred And Twenties';
-    title.style.textAlign = 'center';
-    title.style.marginBottom = '20px';
-    inner.appendChild(title);
-
-    const content = el('div', '');
-    content.style.fontSize = '14px';
-    content.style.lineHeight = '1.5';
-    content.style.color = 'var(--muted)';
-    content.innerHTML = `
-      <p>A classic Newfoundland trick-taking game played in teams of two. The first team to <b>120 points</b> wins!</p>
-      <h4 style="color:var(--text);margin-top:16px;margin-bottom:8px">Rules at a Glance</h4>
-      <ul style="padding-left:20px">
-        <li><b>Bidding:</b> Players bid 20-30 points. High bidder picks trump and takes the 3-card kitty.</li>
-        <li><b>Trump Ranking:</b> 5 (High), Jack, Ace of Hearts, Ace of Trump, K, Q, 10...</li>
-        <li><b>Off-suit Ranking:</b> "Highest in Red (A, K, Q...), Lowest in Black (A, 2, 3...)"</li>
-        <li><b>Following Suit:</b> You can play trump at any time. If trump is led, you must follow unless you hold the 5, J, or A of Hearts (the "Big Three").</li>
-        <li><b>Scoring:</b> Each trick is 5 points. Best trump is +5. If you fail your bid, you lose those points!</li>
-      </ul>
-      <p style="margin-top:16px;font-size:12px;opacity:0.8">
-        Rules based on: <a href="https://www.cs.mun.ca/~paul/nahanni/paul/c120.html" target="_blank" style="color:var(--gold)">Paul Rice's Guide</a>
-      </p>
-    `;
-    inner.appendChild(content);
-
-    const btn = el('button', 'btn is-primary') as HTMLButtonElement;
-    btn.textContent = 'Start Playing';
-    btn.style.marginTop = '20px';
-    btn.style.width = '100%';
-    btn.addEventListener('click', () => this.cb.onIntroClose());
-    inner.appendChild(btn);
-
-    modal.appendChild(inner);
-    return modal;
-  }
 
   private renderBidOnKittyModal(state: GameState): HTMLElement {
     const modal = el('div', 'modal');
