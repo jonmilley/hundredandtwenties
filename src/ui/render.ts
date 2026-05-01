@@ -105,6 +105,9 @@ export class Renderer {
         <li><b>Off-suit Ranking:</b> "Highest in Red, Lowest in Black"</li>
         <li><b>Scoring:</b> Each trick is 5 points. Best trump is +5.</li>
       </ul>
+      <p style="margin-top:12px;font-size:12px;opacity:0.8">
+        Rules based on: <a href="https://www.cs.mun.ca/~paul/nahanni/paul/c120.html" target="_blank" rel="noreferrer" style="color:var(--gold)">Paul Rice's Guide</a>
+      </p>
     `;
     content.appendChild(rulesSection);
 
