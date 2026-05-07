@@ -1015,18 +1015,48 @@ button.btn.suit-btn:hover:not(:disabled) {
     overflow-x: hidden;
   }
 
+  /* The .view wrapper is absolute-positioned with display:flex (row) by default.
+   * On mobile we let it flow normally so the page scrolls vertically and the
+   * table sits above the panel. Modals re-anchor to the viewport with
+   * position:fixed so they stay centred regardless of scroll position. */
+  .view {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+  .view--game {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .view--home {
+    /* Keep splash anchored to the viewport so the sky/silhouette fills it. */
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+  }
+
   .table {
     height: auto;
-    min-height: 420px;
+    min-height: 60vh;
     padding: 4px;
     flex: 1;
     width: 100%;
+    margin: 0;
+    border-radius: 0;
     grid-template-rows: auto 1fr auto;
     /* North and south span full width so their hands don't overflow a 1/3 column */
     grid-template-areas:
       'north north north'
       'west center east'
       'south south south';
+    box-shadow:
+      inset 0 0 0 6px #3a2616,
+      inset 0 0 0 7px rgba(212, 164, 55, 0.4),
+      inset 0 0 0 8px rgba(0, 0, 0, 0.5),
+      inset 0 0 50px rgba(0, 0, 0, 0.5);
+  }
+  .table::before {
+    display: none; /* Skip the wood-grain pseudo on mobile to keep paint cheap */
   }
 
   .center {
@@ -1105,6 +1135,7 @@ button.btn.suit-btn:hover:not(:disabled) {
   }
 
   .modal {
+    position: fixed;
     padding: 10px;
   }
 

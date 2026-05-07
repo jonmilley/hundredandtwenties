@@ -93,7 +93,7 @@ export class Renderer {
     const content = el('div', 'home-content');
 
     const title = el('h1', 'home-title');
-    title.textContent = 'Hundred And Twenties';
+    title.textContent = 'Hundred & Twenties';
     content.appendChild(title);
 
     const subtitle = el('div', 'home-subtitle');
