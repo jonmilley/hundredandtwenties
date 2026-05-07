@@ -1,7 +1,7 @@
 import { Card, SUIT_GLYPHS, SUIT_LABELS, Suit, isRedSuit } from '../game/cards';
 import { legalBidOptions } from '../game/bidding';
 import { scoreHand, applyEndgameRule } from '../game/scoring';
-import { GameState, HUMAN_SEAT, Seat, teamOf } from '../game/state';
+import { GameState, HUMAN_SEAT, Seat, SEAT_NAMES, teamOf } from '../game/state';
 import { legalPlayIndices } from '../game/play';
 import { isTrump } from '../game/ranking';
 
@@ -10,7 +10,6 @@ export type RenderOptions = {
   dealAnimation?: boolean;
 };
 
-const SEAT_NAMES: Record<Seat, string> = { 0: 'You', 1: 'West', 2: 'North', 3: 'East' };
 const SEAT_DIR: Record<Seat, string> = { 0: 'south', 1: 'west', 2: 'north', 3: 'east' };
 const TRICK_SLOT: Record<Seat, string> = { 0: 's', 1: 'w', 2: 'n', 3: 'e' };
 
@@ -63,15 +62,46 @@ export class Renderer {
 
   private renderHomeView(state: GameState): HTMLElement {
     const view = el('div', 'view view--home');
-    
+
+    // Dawn-over-the-harbour atmosphere: distant hills, then Signal Hill with
+    // Cabot Tower silhouetted in the foreground.
+    const sky = el('div', 'splash-sky');
+    sky.innerHTML = `
+      <svg class="splash-hill" viewBox="0 0 1200 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <path d="M0 180 C 220 158, 420 168, 620 158 S 1020 174, 1200 168 L1200 240 L0 240 Z" fill="#06140c" opacity="0.55"/>
+        <path d="M0 218
+                 C 120 214, 280 206, 430 192
+                 S 720 150, 855 92
+                 L 868 92
+                 L 868 52  L 882 52 L 882 46 L 884 46 L 884 52 L 890 52 L 890 46 L 892 46 L 892 52 L 898 52 L 898 46 L 900 46 L 900 52 L 906 52 L 906 92
+                 L 922 95
+                 C 990 116, 1090 162, 1200 200
+                 L1200 240 L0 240 Z"
+              fill="#04100a"/>
+        <line x1="894" y1="46" x2="894" y2="22" stroke="#04100a" stroke-width="1.6"/>
+        <path d="M894 22 L912 27 L894 32 Z" fill="#a8323a" opacity="0.9"/>
+        <rect x="887" y="62" width="3" height="5" fill="#f6c75a" opacity="0.75"/>
+        <rect x="894" y="74" width="3" height="5" fill="#f6c75a" opacity="0.55"/>
+        <circle cx="180" cy="225" r="0.9" fill="#f6c75a" opacity="0.7"/>
+        <circle cx="240" cy="228" r="0.7" fill="#f6c75a" opacity="0.6"/>
+        <circle cx="320" cy="226" r="0.9" fill="#f6c75a" opacity="0.65"/>
+        <circle cx="430" cy="223" r="0.7" fill="#f6c75a" opacity="0.5"/>
+        <circle cx="510" cy="220" r="0.8" fill="#f6c75a" opacity="0.55"/>
+      </svg>`;
+    view.appendChild(sky);
+
     const content = el('div', 'home-content');
-    
+
     const title = el('h1', 'home-title');
     title.textContent = 'Hundred And Twenties';
     content.appendChild(title);
 
+    const subtitle = el('div', 'home-subtitle');
+    subtitle.textContent = 'A Newfoundland card game';
+    content.appendChild(subtitle);
+
     const desc = el('p', 'home-desc');
-    desc.innerHTML = 'A classic Newfoundland trick-taking game.<br>First team to 120 points wins!';
+    desc.textContent = 'A classic trick-taking game from The Rock. First team to 120 points wins.';
     content.appendChild(desc);
 
     const actions = el('div', 'home-actions');
@@ -85,7 +115,7 @@ export class Renderer {
     actions.appendChild(startBtn);
 
     if (state.handsPlayed > 0 || state.phase !== 'intro') {
-      const resumeBtn = el('button', 'btn') as HTMLButtonElement;
+      const resumeBtn = el('button', 'btn is-outline') as HTMLButtonElement;
       resumeBtn.textContent = 'Resume Game';
       resumeBtn.addEventListener('click', () => {
         window.location.hash = '#/play';
@@ -341,12 +371,47 @@ export class Renderer {
   private renderPanel(state: GameState): HTMLElement {
     const panel = el('div', 'panel');
 
+    // Signal Hill banner: a small wide-aspect silhouette to echo the splash and
+    // give the panel a "letterhead" feel.
+    const banner = el('div', 'panel-banner');
+    banner.innerHTML = `
+      <svg class="panel-banner__art" viewBox="0 0 320 64" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="panel-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0a1a26"/>
+            <stop offset="60%" stop-color="#173a44"/>
+            <stop offset="100%" stop-color="#1a3f2c"/>
+          </linearGradient>
+        </defs>
+        <rect width="320" height="64" fill="url(#panel-sky)"/>
+        <circle cx="262" cy="14" r="0.8" fill="#f6c75a" opacity="0.6"/>
+        <circle cx="40" cy="10" r="0.6" fill="#f6c75a" opacity="0.45"/>
+        <circle cx="120" cy="18" r="0.5" fill="#f6c75a" opacity="0.4"/>
+        <path d="M0 52 C 50 48, 100 50, 160 46 S 260 50, 320 46 L320 64 L0 64 Z" fill="#06140c" opacity="0.55"/>
+        <path d="M0 60
+                 C 30 58, 80 56, 130 52
+                 S 210 38, 240 22
+                 L 247 22
+                 L 247 12 L 252 12 L 252 9 L 253 9 L 253 12 L 256 12 L 256 9 L 257 9 L 257 12 L 260 12 L 260 9 L 261 9 L 261 12 L 264 12 L 264 22
+                 L 270 23
+                 C 286 28, 304 42, 320 54
+                 L320 64 L0 64 Z" fill="#04100a"/>
+        <line x1="258" y1="9" x2="258" y2="2" stroke="#04100a" stroke-width="0.8"/>
+        <path d="M258 2 L266 4 L258 6 Z" fill="#a8323a"/>
+        <rect x="254" y="14" width="1.4" height="2.4" fill="#f6c75a" opacity="0.8"/>
+      </svg>
+      <div class="panel-banner__text">
+        <span class="panel-banner__title">Hundred &amp; Twenties</span>
+        <span class="panel-banner__sub">A Newfoundland card game</span>
+      </div>`;
+    panel.appendChild(banner);
+
     // Score
     const scoreTitle = el('div', 'panel__title');
     scoreTitle.textContent = 'Score';
     panel.appendChild(scoreTitle);
     const scoreboard = el('div', 'scoreboard');
-    const teamLabels = ['You & North', 'West & East'];
+    const teamLabels = [`You & ${SEAT_NAMES[2]}`, `${SEAT_NAMES[1]} & ${SEAT_NAMES[3]}`];
     for (let t = 0; t < 2; t++) {
       const sc = el('div', `score-card${t === 0 ? ' is-yours' : ''}`);
       const lbl = el('div', 'score-card__label');
@@ -434,14 +499,15 @@ export class Renderer {
       tricksInfo.style.color = 'var(--muted)';
       const t0 = state.tricksWon[0];
       const t1 = state.tricksWon[1];
-      tricksInfo.textContent = `Tricks — You/North: ${t0}  |  West/East: ${t1}`;
+      tricksInfo.textContent = `Tricks — You/${SEAT_NAMES[2]}: ${t0}  |  ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: ${t1}`;
       section.appendChild(tricksInfo);
       if (state.contract) {
         const bidInfo = el('div', '');
         bidInfo.style.fontSize = '12px';
         bidInfo.style.color = 'var(--muted)';
         const bidderTeam = teamOf(state.contract.bidder);
-        bidInfo.textContent = `Bid: ${state.contract.amount} by ${SEAT_NAMES[state.contract.bidder]} (Team ${bidderTeam === 0 ? 'You/N' : 'W/E'})`;
+        const teamLabel = bidderTeam === 0 ? `You/${SEAT_NAMES[2]}` : `${SEAT_NAMES[1]}/${SEAT_NAMES[3]}`;
+        bidInfo.textContent = `Bid: ${state.contract.amount} by ${SEAT_NAMES[state.contract.bidder]} (${teamLabel})`;
         section.appendChild(bidInfo);
       }
     }
@@ -664,10 +730,10 @@ export class Renderer {
       body.innerHTML = `
         <div><b style="color:var(--text)">${bidderName}</b> bid <b style="color:var(--gold-bright)">${state.contract.amount}</b>
           in <b style="color:${isRedSuit(state.trump) ? '#ff7780' : 'var(--text)'}">${SUIT_GLYPHS[state.trump]} ${SUIT_LABELS[state.trump]}</b></div>
-        <div>Tricks — You/North: <b style="color:var(--text)">${state.tricksWon[0]}</b>
-          &nbsp; West/East: <b style="color:var(--text)">${state.tricksWon[1]}</b></div>
-        <div>Earned — You/North: <b style="color:var(--text)">${ep0}</b>
-          &nbsp; West/East: <b style="color:var(--text)">${ep1}</b></div>
+        <div>Tricks — You/${SEAT_NAMES[2]}: <b style="color:var(--text)">${state.tricksWon[0]}</b>
+          &nbsp; ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: <b style="color:var(--text)">${state.tricksWon[1]}</b></div>
+        <div>Earned — You/${SEAT_NAMES[2]}: <b style="color:var(--text)">${ep0}</b>
+          &nbsp; ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: <b style="color:var(--text)">${ep1}</b></div>
         ${bestLabel ? `<div style="font-size:12px">${bestLabel}</div>` : ''}
         <div style="margin-top:10px;font-size:18px;color:var(--text)">
           New score: <b style="color:#b8e0c4">${newScore[0]}</b> – <b style="color:var(--text)">${newScore[1]}</b>
@@ -691,14 +757,14 @@ export class Renderer {
     const modal = el('div', 'modal');
     const inner = el('div', 'modal__inner');
     const title = el('div', 'modal__title');
-    const winner = state.totalScore[0] >= 120 ? 'You & North Win!' : 'West & East Win!';
+    const winner = state.totalScore[0] >= 120 ? `You & ${SEAT_NAMES[2]} Win!` : `${SEAT_NAMES[1]} & ${SEAT_NAMES[3]} Win!`;
     title.textContent = winner;
     inner.appendChild(title);
 
     const score = el('div', '');
     score.style.fontSize = '18px';
     score.style.color = 'var(--muted)';
-    score.textContent = `Final: You/North ${state.totalScore[0]} — West/East ${state.totalScore[1]}`;
+    score.textContent = `Final: You/${SEAT_NAMES[2]} ${state.totalScore[0]} — ${SEAT_NAMES[1]}/${SEAT_NAMES[3]} ${state.totalScore[1]}`;
     inner.appendChild(score);
 
     const btn = el('button', 'btn is-primary') as HTMLButtonElement;
@@ -827,9 +893,49 @@ export function cardFace(c: Card): HTMLElement {
   return div;
 }
 
+// Newfoundland-themed card back: knit cable weave on dark felt with a gilded
+// diamond medallion and an 8-point compass star at the centre.
+const CARD_BACK_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 118" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <pattern id="nl-knit" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M0,6 Q3,0 6,6 T12,6" stroke="#1f5238" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <path d="M0,6 Q3,12 6,6 T12,6" stroke="#1f5238" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <circle cx="6" cy="6" r="0.6" fill="#a17a2a" opacity="0.55"/>
+    </pattern>
+    <linearGradient id="nl-back-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a4d34"/>
+      <stop offset="100%" stop-color="#11321f"/>
+    </linearGradient>
+    <radialGradient id="nl-medallion" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#163a28"/>
+      <stop offset="100%" stop-color="#0c2317"/>
+    </radialGradient>
+  </defs>
+  <rect width="84" height="118" rx="6" fill="url(#nl-back-grad)"/>
+  <rect x="3" y="3" width="78" height="112" rx="4" fill="url(#nl-knit)"/>
+  <rect x="6" y="6" width="72" height="106" rx="3" fill="none" stroke="#a17a2a" stroke-width="0.7"/>
+  <rect x="7.6" y="7.6" width="68.8" height="102.8" rx="2.4" fill="none" stroke="#d4a437" stroke-width="0.35" opacity="0.7"/>
+  <g transform="translate(42,59)">
+    <path d="M0,-26 L20,0 L0,26 L-20,0 Z" fill="url(#nl-medallion)" stroke="#a17a2a" stroke-width="0.7"/>
+    <path d="M0,-19 L13,0 L0,19 L-13,0 Z" fill="none" stroke="#d4a437" stroke-width="0.4" opacity="0.65"/>
+    <g fill="#d4a437">
+      <path d="M0,-11 L2,-2 L11,0 L2,2 L0,11 L-2,2 L-11,0 L-2,-2 Z"/>
+      <path d="M0,-7 L1.2,-1.2 L7,0 L1.2,1.2 L0,7 L-1.2,1.2 L-7,0 L-1.2,-1.2 Z" fill="#f6c75a" opacity="0.85"/>
+    </g>
+    <circle cx="0" cy="0" r="1.6" fill="#0c2317"/>
+  </g>
+  <g fill="#a17a2a" opacity="0.7">
+    <circle cx="12" cy="12" r="1.1"/>
+    <circle cx="72" cy="12" r="1.1"/>
+    <circle cx="12" cy="106" r="1.1"/>
+    <circle cx="72" cy="106" r="1.1"/>
+  </g>
+</svg>`;
+
 function cardBack(): HTMLElement {
   const div = el('div', 'card is-back');
-  div.appendChild(cardSvgUse('back'));
+  div.innerHTML = CARD_BACK_SVG;
   return div;
 }
 

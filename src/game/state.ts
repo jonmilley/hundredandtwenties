@@ -8,6 +8,16 @@ export const teamOf = (seat: Seat): Team => (seat % 2 === 0 ? 0 : 1);
 
 export const SEATS: readonly Seat[] = [0, 1, 2, 3] as const;
 
+/** Display names for each seat. The human is seat 0; the AI cast is named in
+ * the Irish-Newfoundland tradition to match the game's flavour. */
+export const SEAT_NAMES: Record<Seat, string> = {
+  0: 'You',
+  1: 'Patrick', // west
+  2: 'Mary',    // north (partner)
+  3: 'Bridget', // east
+};
+export const seatName = (seat: Seat): string => SEAT_NAMES[seat];
+
 export const nextSeat = (seat: Seat): Seat => ((seat + 1) % 4) as Seat;
 export const partnerOf = (seat: Seat): Seat => ((seat + 2) % 4) as Seat;
 

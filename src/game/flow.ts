@@ -21,6 +21,7 @@ import {
   Seat,
   Settings,
   nextSeat,
+  seatName,
   teamOf,
 } from './state';
 
@@ -106,7 +107,7 @@ export function dealHand(state: GameState): void {
   state.tricksWon = [0, 0];
   state.bidOnKitty = false;
   state.phase = 'bid';
-  state.log.push(`Hand ${state.handsPlayed + 1} dealt; dealer is seat ${state.dealer}.`);
+  state.log.push(`Hand ${state.handsPlayed + 1} dealt; dealer is ${seatName(state.dealer)}.`);
   state.version++;
 }
 
@@ -128,13 +129,13 @@ export function submitBidAction(state: GameState, seat: Seat, option: BidOption)
   const hand = state.hands[seat];
   const { state: nextB } = submitBid(state.bidding, seat, option, state.dealer, hand);
   state.bidding = nextB;
-  state.log.push(`Seat ${seat}: ${option === 'pass' ? 'pass' : `bid ${option}`}`);
+  state.log.push(`${seatName(seat)}: ${option === 'pass' ? 'pass' : `bid ${option}`}`);
   if (state.bidding.done) {
     const res = biddingResolution(state.bidding);
     if (res) {
       state.contract = res;
       state.phase = 'bid_on_kitty';
-      state.log.push(`Seat ${res.bidder} won the bid at ${res.amount}.`);
+      state.log.push(`${seatName(res.bidder)} won the bid at ${res.amount}.`);
     }
   }
   state.version++;
@@ -176,7 +177,7 @@ export function finalizeOneCardKittyKeep(state: GameState, keepIndex: number): v
   state.stock = [...state.stock, ...discards];
 
   state.phase = 'kitty';
-  state.log.push(`Seat ${bidder} bid on the kitty (kept 1 card).`);
+  state.log.push(`${seatName(bidder)} bid on the kitty (kept 1 card).`);
   state.version++;
 }
 
@@ -237,7 +238,7 @@ export function discardAndDraw(state: GameState, seat: Seat, discards: Card[]): 
   state.hands[seat] = [...remaining, ...drawn];
   // Discarded cards are NOT returned to stock (they're out of play this hand).
   state.discardQueue.shift();
-  state.log.push(`Seat ${seat} discarded ${discards.length} card(s).`);
+  state.log.push(`${seatName(seat)} discarded ${discards.length} card(s).`);
 
   if (state.discardQueue.length === 0) {
     // Move to play phase. Lead is bidder+1 clockwise.
@@ -245,7 +246,7 @@ export function discardAndDraw(state: GameState, seat: Seat, discards: Card[]): 
     state.toAct = nextSeat(state.contract.bidder);
     state.currentTrick = { plays: [] };
     state.phase = 'play';
-    state.log.push(`Play begins; lead is seat ${state.toAct}.`);
+    state.log.push(`Play begins; lead is ${seatName(state.toAct)}.`);
   }
   state.version++;
 }
@@ -286,7 +287,7 @@ export function playCard(state: GameState, seat: Seat, card: Card): void {
   if (state.currentTrick.plays.length === 1) {
     state.currentTrick.ledSuit = card.suit;
   }
-  state.log.push(`Seat ${seat} plays ${card.rank}${card.suit}`);
+  state.log.push(`${seatName(seat)} plays ${card.rank}${card.suit}`);
 
   if (state.currentTrick.plays.length === 4) {
     // Trick complete.
@@ -298,7 +299,7 @@ export function playCard(state: GameState, seat: Seat, card: Card): void {
     state.currentTrick.winner = winnerSeat;
     state.tricksWon[teamOf(winnerSeat)]++;
     state.completedTricks.push(state.currentTrick);
-    state.log.push(`Trick won by seat ${winnerSeat}.`);
+    state.log.push(`Trick won by ${seatName(winnerSeat)}.`);
     if (state.completedTricks.length === HAND_SIZE) {
       // Hand complete -> score.
       state.toAct = null;
