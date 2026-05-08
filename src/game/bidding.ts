@@ -98,7 +98,7 @@ export function submitBid(
     }
 
     // Normal pass: advance.
-    return advance(state, dealer);
+    return advance(state);
   }
 
   // --- Numeric branch ---
@@ -157,15 +157,15 @@ export function submitBid(
     state = { ...state, cursor: state.order.indexOf(dealer) };
     return { state, resolution: null };
   }
-  return advance(state, dealer);
+  return advance(state);
 }
 
-function advance(b: BiddingState, dealer: Seat): { state: BiddingState; resolution: BidResolution | null } {
+function advance(b: BiddingState): { state: BiddingState; resolution: BidResolution | null } {
   const next = b.cursor + 1;
   if (next >= b.order.length) {
     if (b.highBidder === null) {
-      // All passed: dealer is forced to take 20.
-      return finalizeWith(b, dealer, 20);
+      // All passed (including dealer): hand is dead, caller should redeal.
+      return { state: { ...b, done: true }, resolution: null };
     }
     return finalizeWith(b, b.highBidder, b.highBid as BidAmount);
   }

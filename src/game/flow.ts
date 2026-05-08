@@ -136,6 +136,10 @@ export function submitBidAction(state: GameState, seat: Seat, option: BidOption)
       state.contract = res;
       state.phase = 'bid_on_kitty';
       state.log.push(`${seatName(res.bidder)} won the bid at ${res.amount}.`);
+    } else {
+      state.log.push('All players passed. Redealing.');
+      dealHand(state);
+      return;
     }
   }
   state.version++;

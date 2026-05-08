@@ -25,16 +25,14 @@ describe('bidding', () => {
     expect(() => submitBid(b, 1, 'pass', dealer, handWithFive)).not.toThrow();
   });
 
-  it('all pass -> dealer stuck with 20', () => {
+  it('all pass -> bidding done with no resolution (caller should redeal)', () => {
     let b = startBidding(dealer);
     for (const s of [0, 1, 2, 3] as Seat[]) {
       const r = submitBid(b, s, 'pass', dealer);
       b = r.state;
     }
     expect(b.done).toBe(true);
-    const res = biddingResolution(b);
-    expect(res?.bidder).toBe(3);
-    expect(res?.amount).toBe(20);
+    expect(biddingResolution(b)).toBeNull();
   });
 
   it('seat 0 bids 20, others pass, dealer passes -> seat 0 wins at 20', () => {
