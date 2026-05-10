@@ -138,6 +138,10 @@ export function submitBidAction(state: GameState, seat: Seat, option: BidOption)
       state.log.push(`${seatName(res.bidder)} won the bid at ${res.amount}.`);
     } else {
       state.log.push('All players passed. Redealing.');
+      // Perturb the seed so the redeal produces different cards. Without this,
+      // the next deal hits rngFromSeed with the same (rngSeed, handsPlayed)
+      // pair, producing the same shuffle and the same AI passes forever.
+      state.rngSeed = (state.rngSeed + 0x9e3779b1) | 0;
       dealHand(state);
       return;
     }
