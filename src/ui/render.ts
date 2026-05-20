@@ -195,6 +195,9 @@ export class Renderer {
     if (state.phase === 'score') {
       view.appendChild(this.renderScoreModal(state));
     }
+    if (state.phase === 'passout') {
+      view.appendChild(this.renderPassoutModal());
+    }
     if (state.phase === 'gameOver') {
       view.appendChild(this.renderGameOverModal(state));
     }
@@ -219,7 +222,7 @@ export class Renderer {
       chip.textContent = 'D';
       label.appendChild(chip);
     }
-    if (state.phase === 'bid' && state.bidding) {
+    if ((state.phase === 'bid' || state.phase === 'passout') && state.bidding) {
       const lastAction = [...state.bidding.history].reverse().find(e => e.seat === seat);
       if (lastAction) {
         const chip = el('span', lastAction.option === 'pass' ? 'bid-chip bid-chip--pass' : 'bid-chip');
@@ -233,24 +236,6 @@ export class Renderer {
       label.appendChild(chip);
     }
     div.appendChild(label);
-
-    // Kitty pile — shown next to dealer during bidding
-    if (
-      state.dealer === seat &&
-      state.kitty.length > 0 &&
-      (state.phase === 'bid' || state.phase === 'bid_on_kitty')
-    ) {
-      const pileWrapper = el('div', `kitty-pile-wrapper`);
-      const pileLabel = el('div', 'kitty-pile__label');
-      pileLabel.textContent = 'Kitty';
-      pileWrapper.appendChild(pileLabel);
-      const pile = el('div', 'kitty-pile');
-      for (let i = 0; i < state.kitty.length; i++) {
-        pile.appendChild(cardBack());
-      }
-      pileWrapper.appendChild(pile);
-      div.appendChild(pileWrapper);
-    }
 
     // Hand of cards
     const hand = el('div', `hand hand--${dir}`);
@@ -348,6 +333,22 @@ export class Renderer {
     // Hub
     const hub = el('div', 'trick-slot trick-slot--hub');
     const hubInner = el('div', 'hub');
+    // Kitty pile sits centrally during bidding so it doesn't overlap any hand.
+    if (
+      state.kitty.length > 0 &&
+      (state.phase === 'bid' || state.phase === 'bid_on_kitty')
+    ) {
+      const pileWrapper = el('div', 'kitty-pile-wrapper');
+      const pileLabel = el('div', 'kitty-pile__label');
+      pileLabel.textContent = 'Kitty';
+      pileWrapper.appendChild(pileLabel);
+      const pile = el('div', 'kitty-pile');
+      for (let i = 0; i < state.kitty.length; i++) {
+        pile.appendChild(cardBack());
+      }
+      pileWrapper.appendChild(pile);
+      hubInner.appendChild(pileWrapper);
+    }
     if (options.trickWinner !== undefined) {
       const winnerEl = el('span', 'hub__winner');
       winnerEl.textContent = `${SEAT_NAMES[options.trickWinner]} wins!`;
@@ -470,9 +471,8 @@ export class Renderer {
         const hint = el('div', '');
         hint.style.fontSize = '12px';
         hint.style.color = 'var(--muted)';
-        hint.textContent = n === 0
-          ? 'Click cards in your hand to select them for discard.'
-          : `${n} card${n !== 1 ? 's' : ''} selected`;
+        hint.innerHTML = `Non-trump cards are auto-selected. Tap any card to toggle.
+          <br><b style="color:var(--gold-bright)">${n}</b> card${n !== 1 ? 's' : ''} will be discarded.`;
         section.appendChild(hint);
         const btn = el('button', 'btn is-primary') as HTMLButtonElement;
         btn.textContent = n === 0 ? 'Keep All (no discard)' : `Discard ${n} card${n !== 1 ? 's' : ''}`;
@@ -753,6 +753,24 @@ export class Renderer {
     return modal;
   }
 
+  private renderPassoutModal(): HTMLElement {
+    const modal = el('div', 'modal');
+    const inner = el('div', 'modal__inner');
+    const title = el('div', 'modal__title');
+    title.textContent = 'All Players Passed';
+    inner.appendChild(title);
+
+    const body = el('div', '');
+    body.style.fontSize = '14px';
+    body.style.color = 'var(--muted)';
+    body.style.lineHeight = '1.6';
+    body.textContent = 'Re-dealing in a moment…';
+    inner.appendChild(body);
+
+    modal.appendChild(inner);
+    return modal;
+  }
+
   private renderGameOverModal(state: GameState): HTMLElement {
     const modal = el('div', 'modal');
     const inner = el('div', 'modal__inner');
@@ -949,6 +967,7 @@ function phaseLabel(state: GameState): string {
     case 'discard': return 'Discard';
     case 'play': return state.trump ? 'Playing' : 'Play';
     case 'score': return 'Score';
+    case 'passout': return 'All Pass';
     case 'gameOver': return 'Game Over';
   }
 }

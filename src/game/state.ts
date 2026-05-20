@@ -56,6 +56,7 @@ export type Phase =
   | 'discard'      // each seat may discard then draw replacements
   | 'play'         // 5 tricks
   | 'score'
+  | 'passout'      // all four players passed; brief modal, then redeal
   | 'gameOver';
 
 /** Settings the user can toggle. */

@@ -6,6 +6,7 @@ import {
   getLegalBidOptions,
   makeInitialState,
   playCard,
+  redealAfterPassout,
   resolveScorePhase,
   setTrumpAndTakeKitty,
   submitBidAction,
@@ -35,6 +36,7 @@ const AI_BID_DELAY_MS = 1100;
 const AI_CARD_DELAY_MS = 800;
 const AI_DISCARD_DELAY_MS = 500;
 const TRICK_WINNER_PAUSE_MS = 1300;
+const PASSOUT_MODAL_MS = 1800;
 
 const appEl = document.getElementById('app')!;
 
@@ -85,6 +87,8 @@ const callbacks: UICallbacks = {
       if (state.contract?.bidder !== HUMAN_SEAT) scheduleAIBidOnKitty();
     } else if (ph() === 'bid') {
       scheduleAIBid();
+    } else if (ph() === 'passout') {
+      schedulePassoutRedeal();
     }
   },
 
@@ -184,6 +188,7 @@ function resumeAI() {
   else if (ph() === 'kitty' && state.contract?.bidder !== HUMAN_SEAT) scheduleAIKitty();
   else if (ph() === 'discard' && state.discardQueue[0] !== HUMAN_SEAT && state.discardQueue.length > 0) scheduleAIDiscard();
   else if (ph() === 'play' && state.toAct !== HUMAN_SEAT && state.toAct !== null) scheduleAIPlay();
+  else if (ph() === 'passout') schedulePassoutRedeal();
 }
 resumeAI();
 
@@ -205,7 +210,17 @@ async function scheduleAIBid(): Promise<void> {
   }
   if (ph() === 'bid_on_kitty' && state.contract) {
     if (state.contract.bidder !== HUMAN_SEAT) scheduleAIBidOnKitty();
+  } else if (ph() === 'passout') {
+    schedulePassoutRedeal();
   }
+}
+
+async function schedulePassoutRedeal(): Promise<void> {
+  await delay(PASSOUT_MODAL_MS);
+  if (ph() !== 'passout') return;
+  redealAfterPassout(state);
+  render({ dealAnimation: true });
+  if (ph() === 'bid') scheduleAIBid();
 }
 
 async function scheduleAIBidOnKitty(): Promise<void> {

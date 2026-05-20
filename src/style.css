@@ -302,17 +302,12 @@ body {
 /* ---------- Kitty pile ---------- */
 
 .kitty-pile-wrapper {
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  z-index: 2;
+  gap: 4px;
+  margin-bottom: 4px;
 }
-.seat--north .kitty-pile-wrapper { bottom: 0; right: 12px; }
-.seat--south .kitty-pile-wrapper { top: 0; right: 12px; }
-.seat--east  .kitty-pile-wrapper { left: 4px; top: 50%; transform: translateY(-50%); }
-.seat--west  .kitty-pile-wrapper { right: 4px; top: 50%; transform: translateY(-50%); }
 
 .kitty-pile__label {
   font-size: 9px;
@@ -323,14 +318,16 @@ body {
 
 .kitty-pile {
   position: relative;
-  width: 84px;
-  height: 130px;
+  width: 60px;
+  height: 84px;
 }
 
 .kitty-pile .card {
   position: absolute;
   top: 0;
   left: 0;
+  width: 60px;
+  height: 84px;
 }
 .kitty-pile .card:nth-child(2) { transform: translate(3px, -3px) translateZ(0); }
 .kitty-pile .card:nth-child(3) { transform: translate(6px, -6px) translateZ(0); }
@@ -411,6 +408,12 @@ body {
   position: relative;
   min-height: 150px;
 }
+
+/* Lock hand box dimensions to the full 5-card span so the layout stays
+ * anchored as cards are played out. Without this the flex centring shifts
+ * every remaining card a few pixels each turn. */
+.hand--south, .hand--north { min-width: 284px; }
+.hand--east, .hand--west { min-height: 318px; }
 
 .hand--south .card {
   margin-left: -34px;
@@ -495,10 +498,13 @@ body {
 /* Hand of human (south) — interactive cards */
 .hand--south .card.is-legal {
   cursor: pointer;
+  touch-action: manipulation;
 }
-.hand--south .card.is-legal:hover {
-  transform: translateY(-12px) translateZ(0);
-  box-shadow: 0 12px 22px var(--shadow);
+@media (hover: hover) {
+  .hand--south .card.is-legal:hover {
+    transform: translateY(-12px) translateZ(0);
+    box-shadow: 0 12px 22px var(--shadow);
+  }
 }
 .hand--south .card.is-illegal {
   filter: brightness(0.6) saturate(0.5);
@@ -1122,9 +1128,12 @@ button.btn.suit-btn:hover:not(:disabled) {
   .hand--north .card { margin-left: -27px; }
   .hand--east .card, .hand--west .card { margin-top: -42px; }
 
-  .kitty-pile-wrapper {
-    display: none;
-  }
+  /* Shrunk-card equivalents of the desktop fixed-span hand boxes. */
+  .hand--south, .hand--north { min-width: 176px; }
+  .hand--east, .hand--west { min-height: 197px; }
+
+  .kitty-pile { width: 40px; height: 56px; }
+  .kitty-pile .card { width: 40px; height: 56px; }
 
   .center {
     gap: 4px;
