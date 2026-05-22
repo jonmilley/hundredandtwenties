@@ -435,11 +435,16 @@ export class Renderer {
     section.appendChild(sectionTitle);
 
     if (state.phase === 'deal') {
-      sectionTitle.textContent = 'Ready';
-      const btn = el('button', 'btn is-primary') as HTMLButtonElement;
-      btn.textContent = state.handsPlayed === 0 ? 'Start Game' : 'Deal Next Hand';
-      btn.addEventListener('click', () => this.cb.onDealClick());
-      section.appendChild(btn);
+      if (state.handsPlayed === 0) {
+        sectionTitle.textContent = 'Ready';
+        const btn = el('button', 'btn is-primary') as HTMLButtonElement;
+        btn.textContent = 'Start Game';
+        btn.addEventListener('click', () => this.cb.onDealClick());
+        section.appendChild(btn);
+      } else {
+        // Subsequent hands deal automatically; no manual button.
+        sectionTitle.textContent = 'Dealing next hand…';
+      }
     } else if (state.phase === 'bid' && state.bidding && !state.bidding.done) {
       const currentBidder = state.bidding.order[state.bidding.cursor];
       if (currentBidder === HUMAN_SEAT) {

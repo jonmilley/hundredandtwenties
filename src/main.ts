@@ -37,6 +37,7 @@ const AI_CARD_DELAY_MS = 800;
 const AI_DISCARD_DELAY_MS = 500;
 const TRICK_WINNER_PAUSE_MS = 1300;
 const PASSOUT_MODAL_MS = 1800;
+const AUTO_DEAL_DELAY_MS = 700;
 
 const appEl = document.getElementById('app')!;
 
@@ -135,15 +136,16 @@ const callbacks: UICallbacks = {
     if (ph() === 'gameOver') {
       state = makeInitialState(Date.now());
     }
-    dealHand(state);
-    render({ dealAnimation: true });
-    scheduleAIBid();
+    dealAndStartBidding();
   },
 
   onScoreClose() {
     if (ph() !== 'score') return;
     resolveScorePhase(state);
     render();
+    // Once the score is acknowledged, deal the next hand automatically (unless
+    // the game just ended, in which case resolveScorePhase moved us to gameOver).
+    if (ph() === 'deal') scheduleAutoDeal();
   },
 
   onIntroClose() {
@@ -181,6 +183,21 @@ function handleRouting() {
 window.addEventListener('hashchange', handleRouting);
 handleRouting();
 
+// Deal a fresh hand and start bidding. Shared by the manual "Start Game" button
+// and the automatic deal between hands.
+function dealAndStartBidding(): void {
+  dealHand(state);
+  render({ dealAnimation: true });
+  scheduleAIBid();
+}
+
+// Auto-deal the next hand after a short beat (no manual "Deal Next Hand" button).
+function scheduleAutoDeal(): void {
+  setTimeout(() => {
+    if (ph() === 'deal') dealAndStartBidding();
+  }, AUTO_DEAL_DELAY_MS);
+}
+
 // Resume AI if it's their turn on load
 function resumeAI() {
   if (ph() === 'bid') scheduleAIBid();
@@ -189,6 +206,10 @@ function resumeAI() {
   else if (ph() === 'discard' && state.discardQueue[0] !== HUMAN_SEAT && state.discardQueue.length > 0) scheduleAIDiscard();
   else if (ph() === 'play' && state.toAct !== HUMAN_SEAT && state.toAct !== null) scheduleAIPlay();
   else if (ph() === 'passout') schedulePassoutRedeal();
+  // A persisted 'deal' phase between hands (handsPlayed > 0) has no button, so
+  // deal it automatically. The very first hand (handsPlayed === 0) keeps its
+  // "Start Game" button.
+  else if (ph() === 'deal' && state.handsPlayed > 0) scheduleAutoDeal();
 }
 resumeAI();
 
