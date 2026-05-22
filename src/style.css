@@ -12,6 +12,26 @@
   --panel-stroke: rgba(255, 255, 255, 0.08);
   --text: #f4f1e8;
   --muted: #a9a397;
+
+  /* ---- Fluid table sizing ----
+   * Card height is the master dimension; card width and every fan overlap,
+   * hand span, and the kitty derive from it, so the whole table scales as one.
+   * It tracks viewport height (the binding constraint: side hands stack
+   * vertically and the south hand must stay on-screen) and is capped by width
+   * on narrow windows. The vh budget leaves ~130px for labels, padding, and
+   * the rail so five rows of content never overflow a short viewport. */
+  --card-ratio: 0.712; /* 84 / 118 */
+  --card-h: clamp(52px, min(calc(20vh - 24px), 14vw), 118px);
+  --card-w: calc(var(--card-h) * var(--card-ratio));
+  --card-pad: clamp(2px, 0.35vh, 4px);
+  --card-radius: clamp(4px, 0.5vh, 6px);
+  --overlap-south: calc(var(--card-w) * -0.405);
+  --overlap-north: calc(var(--card-w) * -0.524);
+  --overlap-side: calc(var(--card-h) * -0.576);
+  --hand-span-h: calc(var(--card-w) * 3.381); /* 5-card horizontal fan */
+  --hand-span-v: calc(var(--card-h) * 2.695); /* 5-card vertical stack */
+  --kitty-w: calc(var(--card-w) * 0.714);
+  --kitty-h: calc(var(--card-h) * 0.714);
 }
 
 * {
@@ -318,16 +338,16 @@ body {
 
 .kitty-pile {
   position: relative;
-  width: 60px;
-  height: 84px;
+  width: var(--kitty-w);
+  height: var(--kitty-h);
 }
 
 .kitty-pile .card {
   position: absolute;
   top: 0;
   left: 0;
-  width: 60px;
-  height: 84px;
+  width: var(--kitty-w);
+  height: var(--kitty-h);
 }
 .kitty-pile .card:nth-child(2) { transform: translate(3px, -3px) translateZ(0); }
 .kitty-pile .card:nth-child(3) { transform: translate(6px, -6px) translateZ(0); }
@@ -406,24 +426,25 @@ body {
   align-items: center;
   justify-content: center;
   position: relative;
-  min-height: 150px;
+  min-height: var(--card-h);
 }
 
 /* Lock hand box dimensions to the full 5-card span so the layout stays
  * anchored as cards are played out. Without this the flex centring shifts
- * every remaining card a few pixels each turn. */
-.hand--south, .hand--north { min-width: 284px; }
-.hand--east, .hand--west { min-height: 318px; }
+ * every remaining card a few pixels each turn. Spans derive from --card-h so
+ * they track the fluid card size. */
+.hand--south, .hand--north { min-width: var(--hand-span-h); }
+.hand--east, .hand--west { min-height: var(--hand-span-v); }
 
 .hand--south .card {
-  margin-left: -34px;
+  margin-left: var(--overlap-south);
 }
 .hand--south .card:first-child {
   margin-left: 0;
 }
 
 .hand--north .card {
-  margin-left: -44px;
+  margin-left: var(--overlap-north);
   --base-rot: 180deg;
   transform: rotate(var(--base-rot)) translateZ(0);
 }
@@ -437,7 +458,7 @@ body {
 }
 .hand--east .card,
 .hand--west .card {
-  margin-top: -68px;
+  margin-top: var(--overlap-side);
   --base-rot: 90deg;
   transform: rotate(var(--base-rot)) translateZ(0);
 }
@@ -449,11 +470,11 @@ body {
 /* ---------- Card ---------- */
 
 .card {
-  width: 84px;
-  height: 118px;
-  border-radius: 6px;
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
   background: var(--card-bg);
-  padding: 4px;
+  padding: var(--card-pad);
   box-shadow: 0 4px 10px var(--shadow);
   position: relative;
   cursor: default;
@@ -618,6 +639,13 @@ body {
   -webkit-backdrop-filter: blur(6px);
   overflow: hidden;
   flex-shrink: 0;
+}
+
+/* Score + action wrapper. On desktop it is transparent to layout (its children
+ * behave as direct panel flex items); the mobile media query promotes it to a
+ * floating HUD. */
+.panel-hud {
+  display: contents;
 }
 
 /* ---------- Panel banner (Signal Hill letterhead) ---------- */
@@ -1007,6 +1035,13 @@ button.btn.suit-btn:hover:not(:disabled) {
 /* ---------- Mobile Responsiveness ---------- */
 
 @media (max-width: 900px) {
+  :root {
+    /* Mobile reflows to a vertically scrolling column, so vh no longer bounds
+     * the table. Size cards off width instead; everything else still derives
+     * from --card-h. */
+    --card-h: clamp(54px, 19vw, 96px);
+  }
+
   html, body {
     overflow-x: hidden;
     overflow-y: auto;
@@ -1087,6 +1122,67 @@ button.btn.suit-btn:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.85);
   }
 
+  /* ---- Floating HUD ----
+   * The score + action controls lift out of the scrolling panel into a card
+   * pinned to the top of the viewport, so the score is always glanceable and
+   * the bid/deal buttons are always tappable without scrolling. Phase modals
+   * (trump, score, game over) already float above this. */
+  .panel-hud {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: fixed;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 12px);
+    max-width: 620px;
+    z-index: 15;
+    padding: 8px 10px 10px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(16, 34, 25, 0.85), rgba(8, 18, 13, 0.85));
+    border: 1px solid rgba(212, 164, 55, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 10px 28px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+  .panel-hud > .panel__title {
+    display: none; /* "Score" label is redundant in the compact bar */
+  }
+  .panel-hud .scoreboard {
+    gap: 6px;
+  }
+  .panel-hud .score-card {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 5px 9px 4px;
+    text-align: left;
+  }
+  .panel-hud .score-card__value {
+    font-size: 18px;
+    margin-top: 0;
+  }
+  .panel-hud .action-section {
+    gap: 6px;
+  }
+  .panel-hud .action-section__title {
+    font-size: 11px;
+  }
+  .panel-hud .button-row {
+    gap: 6px;
+  }
+
+  /* Reserve room at the top of the table so the opponent's seat clears the
+   * floating HUD when scrolled to the top. Sized for the bid/deal HUD; the
+   * taller play-phase HUD may graze the opponent's (face-down) card backs. */
+  .table {
+    padding-top: 120px;
+  }
+
   .scoreboard {
     gap: 6px;
   }
@@ -1111,31 +1207,6 @@ button.btn.suit-btn:hover:not(:disabled) {
   }
 
   .action-section {
-    gap: 4px;
-  }
-
-  .card {
-    width: 52px;
-    height: 73px;
-    padding: 2px;
-  }
-
-  .hand {
-    min-height: 73px;
-  }
-
-  .hand--south .card { margin-left: -21px; }
-  .hand--north .card { margin-left: -27px; }
-  .hand--east .card, .hand--west .card { margin-top: -42px; }
-
-  /* Shrunk-card equivalents of the desktop fixed-span hand boxes. */
-  .hand--south, .hand--north { min-width: 176px; }
-  .hand--east, .hand--west { min-height: 197px; }
-
-  .kitty-pile { width: 40px; height: 56px; }
-  .kitty-pile .card { width: 40px; height: 56px; }
-
-  .center {
     gap: 4px;
   }
 
@@ -1170,14 +1241,5 @@ button.btn.suit-btn:hover:not(:disabled) {
   }
 }
 
-@media (max-height: 600px) and (min-width: 901px) {
-  /* Landscape on short screens */
-  .card {
-    width: 52px;
-    height: 73px;
-    padding: 2px;
-  }
-  .hand {
-    min-height: 73px;
-  }
-}
+/* Short desktop/landscape screens are handled by the fluid --card-h above
+ * (the vh term shrinks cards as height drops), so no fixed-size block here. */

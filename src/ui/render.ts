@@ -407,10 +407,14 @@ export class Renderer {
       </div>`;
     panel.appendChild(banner);
 
-    // Score
+    // Score + action controls live in a HUD wrapper. On desktop this is
+    // display:contents (no visual change). On small screens it lifts out into a
+    // floating, always-visible bar (see .panel-hud in the mobile media query)
+    // so the score and bid buttons stay reachable without scrolling.
+    const hud = el('div', 'panel-hud');
     const scoreTitle = el('div', 'panel__title');
     scoreTitle.textContent = 'Score';
-    panel.appendChild(scoreTitle);
+    hud.appendChild(scoreTitle);
     const scoreboard = el('div', 'scoreboard');
     const teamLabels = [`You & ${SEAT_NAMES[2]}`, `${SEAT_NAMES[1]} & ${SEAT_NAMES[3]}`];
     for (let t = 0; t < 2; t++) {
@@ -423,7 +427,7 @@ export class Renderer {
       sc.appendChild(val);
       scoreboard.appendChild(sc);
     }
-    panel.appendChild(scoreboard);
+    hud.appendChild(scoreboard);
 
     // Action section
     const section = el('div', 'action-section');
@@ -512,7 +516,8 @@ export class Renderer {
       }
     }
 
-    panel.appendChild(section);
+    hud.appendChild(section);
+    panel.appendChild(hud);
 
     // Log
     const logHeader = el('div', 'log-header');
