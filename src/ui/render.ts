@@ -1,7 +1,7 @@
 import { Card, SUIT_GLYPHS, SUIT_LABELS, Suit, isRedSuit } from '../game/cards';
 import { legalBidOptions } from '../game/bidding';
 import { scoreHand, applyEndgameRule } from '../game/scoring';
-import { GameState, HUMAN_SEAT, Seat, SEAT_NAMES, teamOf } from '../game/state';
+import { GameState, HUMAN_SEAT, Seat, teamOf } from '../game/state';
 import { legalPlayIndices } from '../game/play';
 import { isTrump } from '../game/ranking';
 
@@ -212,7 +212,7 @@ export class Renderer {
     // Label row
     const label = el('div', 'seat__label');
     const nameEl = el('span', 'seat__name');
-    nameEl.textContent = SEAT_NAMES[seat];
+    nameEl.textContent = state.seatNames[seat];
     if (state.toAct === seat || (state.bidding && state.bidding.order[state.bidding.cursor] === seat)) {
       nameEl.classList.add('is-acting');
     }
@@ -351,7 +351,7 @@ export class Renderer {
     }
     if (options.trickWinner !== undefined) {
       const winnerEl = el('span', 'hub__winner');
-      winnerEl.textContent = `${SEAT_NAMES[options.trickWinner]} wins!`;
+      winnerEl.textContent = `${state.seatNames[options.trickWinner]} wins!`;
       hubInner.appendChild(winnerEl);
     }
     const phase = el('span', 'hub__phase');
@@ -416,7 +416,7 @@ export class Renderer {
     scoreTitle.textContent = 'Score';
     hud.appendChild(scoreTitle);
     const scoreboard = el('div', 'scoreboard');
-    const teamLabels = [`You & ${SEAT_NAMES[2]}`, `${SEAT_NAMES[1]} & ${SEAT_NAMES[3]}`];
+    const teamLabels = [`You & ${state.seatNames[2]}`, `${state.seatNames[1]} & ${state.seatNames[3]}`];
     for (let t = 0; t < 2; t++) {
       const sc = el('div', `score-card${t === 0 ? ' is-yours' : ''}`);
       const lbl = el('div', 'score-card__label');
@@ -469,7 +469,7 @@ export class Renderer {
         }
         section.appendChild(row);
       } else {
-        sectionTitle.textContent = `${SEAT_NAMES[currentBidder!]} is bidding…`;
+        sectionTitle.textContent = `${state.seatNames[currentBidder!]} is bidding…`;
       }
     } else if (state.phase === 'kitty') {
       sectionTitle.textContent = 'Pick Trump';
@@ -492,13 +492,13 @@ export class Renderer {
         });
         section.appendChild(btn);
       } else {
-        sectionTitle.textContent = `${SEAT_NAMES[state.discardQueue[0]!]} discarding…`;
+        sectionTitle.textContent = `${state.seatNames[state.discardQueue[0]!]} discarding…`;
       }
     } else if (state.phase === 'play') {
       if (state.toAct === HUMAN_SEAT) {
         sectionTitle.textContent = 'Your Turn — Play a Card';
       } else if (state.toAct !== null) {
-        sectionTitle.textContent = `${SEAT_NAMES[state.toAct]} is playing…`;
+        sectionTitle.textContent = `${state.seatNames[state.toAct]} is playing…`;
       } else {
         sectionTitle.textContent = 'Trick complete';
       }
@@ -508,15 +508,15 @@ export class Renderer {
       tricksInfo.style.color = 'var(--muted)';
       const t0 = state.tricksWon[0];
       const t1 = state.tricksWon[1];
-      tricksInfo.textContent = `Tricks — You/${SEAT_NAMES[2]}: ${t0}  |  ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: ${t1}`;
+      tricksInfo.textContent = `Tricks — You/${state.seatNames[2]}: ${t0}  |  ${state.seatNames[1]}/${state.seatNames[3]}: ${t1}`;
       section.appendChild(tricksInfo);
       if (state.contract) {
         const bidInfo = el('div', '');
         bidInfo.style.fontSize = '12px';
         bidInfo.style.color = 'var(--muted)';
         const bidderTeam = teamOf(state.contract.bidder);
-        const teamLabel = bidderTeam === 0 ? `You/${SEAT_NAMES[2]}` : `${SEAT_NAMES[1]}/${SEAT_NAMES[3]}`;
-        bidInfo.textContent = `Bid: ${state.contract.amount} by ${SEAT_NAMES[state.contract.bidder]} (${teamLabel})`;
+        const teamLabel = bidderTeam === 0 ? `You/${state.seatNames[2]}` : `${state.seatNames[1]}/${state.seatNames[3]}`;
+        bidInfo.textContent = `Bid: ${state.contract.amount} by ${state.seatNames[state.contract.bidder]} (${teamLabel})`;
         section.appendChild(bidInfo);
       }
     }
@@ -589,7 +589,7 @@ export class Renderer {
     inner.appendChild(title);
 
     if (state.contract.bidder !== HUMAN_SEAT) {
-      title.textContent = `${SEAT_NAMES[state.contract.bidder]} is naming trump…`;
+      title.textContent = `${state.seatNames[state.contract.bidder]} is naming trump…`;
       modal.appendChild(inner);
       return modal;
     }
@@ -731,19 +731,19 @@ export class Renderer {
       body.style.color = 'var(--muted)';
       body.style.lineHeight = '1.8';
 
-      const bidderName = SEAT_NAMES[state.contract.bidder];
+      const bidderName = state.seatNames[state.contract.bidder];
       const ep0 = result.trickPointsByTeam[0] + result.bonusByTeam[0];
       const ep1 = result.trickPointsByTeam[1] + result.bonusByTeam[1];
       const bestSeat = result.bestTrumpSeat;
-      const bestLabel = bestSeat !== null ? `${SEAT_NAMES[bestSeat]} held best trump (+5)` : '';
+      const bestLabel = bestSeat !== null ? `${state.seatNames[bestSeat]} held best trump (+5)` : '';
 
       body.innerHTML = `
         <div><b style="color:var(--text)">${bidderName}</b> bid <b style="color:var(--gold-bright)">${state.contract.amount}</b>
           in <b style="color:${isRedSuit(state.trump) ? '#ff7780' : 'var(--text)'}">${SUIT_GLYPHS[state.trump]} ${SUIT_LABELS[state.trump]}</b></div>
-        <div>Tricks — You/${SEAT_NAMES[2]}: <b style="color:var(--text)">${state.tricksWon[0]}</b>
-          &nbsp; ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: <b style="color:var(--text)">${state.tricksWon[1]}</b></div>
-        <div>Earned — You/${SEAT_NAMES[2]}: <b style="color:var(--text)">${ep0}</b>
-          &nbsp; ${SEAT_NAMES[1]}/${SEAT_NAMES[3]}: <b style="color:var(--text)">${ep1}</b></div>
+        <div>Tricks — You/${state.seatNames[2]}: <b style="color:var(--text)">${state.tricksWon[0]}</b>
+          &nbsp; ${state.seatNames[1]}/${state.seatNames[3]}: <b style="color:var(--text)">${state.tricksWon[1]}</b></div>
+        <div>Earned — You/${state.seatNames[2]}: <b style="color:var(--text)">${ep0}</b>
+          &nbsp; ${state.seatNames[1]}/${state.seatNames[3]}: <b style="color:var(--text)">${ep1}</b></div>
         ${bestLabel ? `<div style="font-size:12px">${bestLabel}</div>` : ''}
         <div style="margin-top:10px;font-size:18px;color:var(--text)">
           New score: <b style="color:#b8e0c4">${newScore[0]}</b> – <b style="color:var(--text)">${newScore[1]}</b>
@@ -785,14 +785,14 @@ export class Renderer {
     const modal = el('div', 'modal');
     const inner = el('div', 'modal__inner');
     const title = el('div', 'modal__title');
-    const winner = state.totalScore[0] >= 120 ? `You & ${SEAT_NAMES[2]} Win!` : `${SEAT_NAMES[1]} & ${SEAT_NAMES[3]} Win!`;
+    const winner = state.totalScore[0] >= 120 ? `You & ${state.seatNames[2]} Win!` : `${state.seatNames[1]} & ${state.seatNames[3]} Win!`;
     title.textContent = winner;
     inner.appendChild(title);
 
     const score = el('div', '');
     score.style.fontSize = '18px';
     score.style.color = 'var(--muted)';
-    score.textContent = `Final: You/${SEAT_NAMES[2]} ${state.totalScore[0]} — ${SEAT_NAMES[1]}/${SEAT_NAMES[3]} ${state.totalScore[1]}`;
+    score.textContent = `Final: You/${state.seatNames[2]} ${state.totalScore[0]} — ${state.seatNames[1]}/${state.seatNames[3]} ${state.totalScore[1]}`;
     inner.appendChild(score);
 
     const btn = el('button', 'btn is-primary') as HTMLButtonElement;
@@ -812,7 +812,7 @@ export class Renderer {
     inner.appendChild(title);
 
     if (state.contract?.bidder !== HUMAN_SEAT) {
-      title.textContent = `${SEAT_NAMES[state.contract?.bidder ?? 1]} is choosing kitty option...`;
+      title.textContent = `${state.seatNames[state.contract?.bidder ?? 1]} is choosing kitty option...`;
       modal.appendChild(inner);
       return modal;
     }

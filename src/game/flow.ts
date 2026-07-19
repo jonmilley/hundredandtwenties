@@ -21,6 +21,7 @@ import {
   Seat,
   Settings,
   nextSeat,
+  pickSeatNames,
   seatName,
   teamOf,
 } from './state';
@@ -41,10 +42,13 @@ export function rngFromSeed(seed: number): () => number {
 }
 
 export function makeInitialState(seed: number, settings?: Partial<Settings>): GameState {
-  const dealer: Seat = 3; // first deal: dealer to right of you (seat 3); you (0) bid first
+  // Setup rng uses a seed offset so names/dealer don't correlate with the first deal.
+  const setupRng = rngFromSeed(seed ^ 0x120cafe);
+  const dealer = Math.floor(setupRng() * 4) as Seat; // random first dealer; rotates clockwise after each hand
   const state: GameState = {
     rngSeed: seed,
     phase: 'intro',
+    seatNames: pickSeatNames(setupRng),
     dealer,
     hands: { 0: [], 1: [], 2: [], 3: [] } as GameState['hands'],
     kitty: [],
@@ -107,7 +111,7 @@ export function dealHand(state: GameState): void {
   state.tricksWon = [0, 0];
   state.bidOnKitty = false;
   state.phase = 'bid';
-  state.log.push(`Hand ${state.handsPlayed + 1} dealt; dealer is ${seatName(state.dealer)}.`);
+  state.log.push(`Hand ${state.handsPlayed + 1} dealt; dealer is ${seatName(state,state.dealer)}.`);
   state.version++;
 }
 
@@ -129,13 +133,13 @@ export function submitBidAction(state: GameState, seat: Seat, option: BidOption)
   const hand = state.hands[seat];
   const { state: nextB } = submitBid(state.bidding, seat, option, state.dealer, hand);
   state.bidding = nextB;
-  state.log.push(`${seatName(seat)}: ${option === 'pass' ? 'pass' : `bid ${option}`}`);
+  state.log.push(`${seatName(state,seat)}: ${option === 'pass' ? 'pass' : `bid ${option}`}`);
   if (state.bidding.done) {
     const res = biddingResolution(state.bidding);
     if (res) {
       state.contract = res;
       state.phase = 'bid_on_kitty';
-      state.log.push(`${seatName(res.bidder)} won the bid at ${res.amount}.`);
+      state.log.push(`${seatName(state,res.bidder)} won the bid at ${res.amount}.`);
     } else {
       state.log.push('All players passed. Redealing.');
       // Don't redeal yet — the UI shows a passout modal first. The caller
@@ -193,7 +197,7 @@ export function finalizeOneCardKittyKeep(state: GameState, keepIndex: number): v
   state.stock = [...state.stock, ...discards];
 
   state.phase = 'kitty';
-  state.log.push(`${seatName(bidder)} bid on the kitty (kept 1 card).`);
+  state.log.push(`${seatName(state,bidder)} bid on the kitty (kept 1 card).`);
   state.version++;
 }
 
@@ -254,7 +258,7 @@ export function discardAndDraw(state: GameState, seat: Seat, discards: Card[]): 
   state.hands[seat] = [...remaining, ...drawn];
   // Discarded cards are NOT returned to stock (they're out of play this hand).
   state.discardQueue.shift();
-  state.log.push(`${seatName(seat)} discarded ${discards.length} card(s).`);
+  state.log.push(`${seatName(state,seat)} discarded ${discards.length} card(s).`);
 
   if (state.discardQueue.length === 0) {
     // Move to play phase. Lead is bidder+1 clockwise.
@@ -262,7 +266,7 @@ export function discardAndDraw(state: GameState, seat: Seat, discards: Card[]): 
     state.toAct = nextSeat(state.contract.bidder);
     state.currentTrick = { plays: [] };
     state.phase = 'play';
-    state.log.push(`Play begins; lead is ${seatName(state.toAct)}.`);
+    state.log.push(`Play begins; lead is ${seatName(state,state.toAct)}.`);
   }
   state.version++;
 }
@@ -303,7 +307,7 @@ export function playCard(state: GameState, seat: Seat, card: Card): void {
   if (state.currentTrick.plays.length === 1) {
     state.currentTrick.ledSuit = card.suit;
   }
-  state.log.push(`${seatName(seat)} plays ${card.rank}${card.suit}`);
+  state.log.push(`${seatName(state,seat)} plays ${card.rank}${card.suit}`);
 
   if (state.currentTrick.plays.length === 4) {
     // Trick complete.
@@ -315,7 +319,7 @@ export function playCard(state: GameState, seat: Seat, card: Card): void {
     state.currentTrick.winner = winnerSeat;
     state.tricksWon[teamOf(winnerSeat)]++;
     state.completedTricks.push(state.currentTrick);
-    state.log.push(`Trick won by ${seatName(winnerSeat)}.`);
+    state.log.push(`Trick won by ${seatName(state,winnerSeat)}.`);
     if (state.completedTricks.length === HAND_SIZE) {
       // Hand complete -> score.
       state.toAct = null;

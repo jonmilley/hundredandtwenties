@@ -8,15 +8,34 @@ export const teamOf = (seat: Seat): Team => (seat % 2 === 0 ? 0 : 1);
 
 export const SEATS: readonly Seat[] = [0, 1, 2, 3] as const;
 
-/** Display names for each seat. The human is seat 0; the AI cast is named in
- * the Irish-Newfoundland tradition to match the game's flavour. */
-export const SEAT_NAMES: Record<Seat, string> = {
+/** Pool of AI names in the Irish-Newfoundland tradition to match the game's
+ * flavour. Three are drawn at random for seats 1-3 when a game starts. */
+export const AI_NAME_POOL: readonly string[] = [
+  'Patrick', 'Mary', 'Bridget', 'Seamus', 'Nora', 'Declan',
+  'Eileen', 'Finbar', 'Siobhan', 'Cyril', 'Bernadette', 'Gus',
+  'Loretta', 'Alphonsus', 'Maeve', 'Dermot',
+];
+
+/** Fallback names for saved games that predate randomized seat names. */
+export const DEFAULT_SEAT_NAMES: Record<Seat, string> = {
   0: 'You',
   1: 'Patrick', // west
   2: 'Mary',    // north (partner)
   3: 'Bridget', // east
 };
-export const seatName = (seat: Seat): string => SEAT_NAMES[seat];
+
+/** Draw three distinct names from the pool for the AI seats. */
+export function pickSeatNames(rng: () => number): Record<Seat, string> {
+  const pool = [...AI_NAME_POOL];
+  const picks: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    const idx = Math.floor(rng() * pool.length);
+    picks.push(pool.splice(idx, 1)[0]!);
+  }
+  return { 0: 'You', 1: picks[0]!, 2: picks[1]!, 3: picks[2]! };
+}
+
+export const seatName = (state: GameState, seat: Seat): string => state.seatNames[seat];
 
 export const nextSeat = (seat: Seat): Seat => ((seat + 1) % 4) as Seat;
 export const partnerOf = (seat: Seat): Seat => ((seat + 2) % 4) as Seat;
@@ -70,6 +89,9 @@ export type GameState = {
   rngSeed: number;
   phase: Phase;
 
+  /** Display names per seat; seat 0 is always 'You', AI seats are drawn from AI_NAME_POOL. */
+  seatNames: Record<Seat, string>;
+
   dealer: Seat;
   hands: Record<Seat, Card[]>;
   kitty: Card[];
@@ -119,7 +141,9 @@ export function loadState(): GameState | null {
   try {
     const data = sessionStorage.getItem(STORAGE_KEY);
     if (!data) return null;
-    return JSON.parse(data);
+    const state: GameState = JSON.parse(data);
+    if (!state.seatNames) state.seatNames = { ...DEFAULT_SEAT_NAMES };
+    return state;
   } catch (e) {
     console.error('Failed to load state from sessionStorage', e);
     return null;
