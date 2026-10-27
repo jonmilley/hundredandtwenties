@@ -1,7 +1,7 @@
 import { Card, SUIT_GLYPHS, SUIT_LABELS, Suit, isRedSuit } from '../game/cards';
 import { legalBidOptions } from '../game/bidding';
 import { scoreHand, applyEndgameRule } from '../game/scoring';
-import { GameState, HUMAN_SEAT, Seat, teamOf } from '../game/state';
+import { BidOption, GameState, HUMAN_SEAT, Seat, teamOf } from '../game/state';
 import { legalPlayIndices } from '../game/play';
 import { isTrump } from '../game/ranking';
 
@@ -10,8 +10,12 @@ export type RenderOptions = {
   dealAnimation?: boolean;
 };
 
+type KeyHint = { keys: string[]; label: string };
+
 const SEAT_DIR: Record<Seat, string> = { 0: 'south', 1: 'west', 2: 'north', 3: 'east' };
 const TRICK_SLOT: Record<Seat, string> = { 0: 's', 1: 'w', 2: 'n', 3: 'e' };
+// Bid shortcuts use the bid's distinguishing digit (25 can't share 2 with 20).
+const BID_KEYS: Record<BidOption, string> = { pass: 'P', 20: '2', 25: '5', 30: '3' };
 
 export type UICallbacks = {
   onCardClick: (seat: Seat, cardIdx: number) => void;
@@ -37,6 +41,10 @@ export class Renderer {
   private discardAutoInitDone = false;
   private logExpanded = false;
   private currentView: View = 'HOME';
+  // Keyboard shortcuts for the DOM currently on screen. Rebuilt on every render
+  // alongside the elements they click, so a shortcut can never outlive its target.
+  private keymap = new Map<string, HTMLElement>();
+  private keyHints: KeyHint[] = [];
 
   constructor(root: HTMLElement, cb: UICallbacks) {
     this.root = root;
@@ -47,8 +55,30 @@ export class Renderer {
     this.currentView = view;
   }
 
+  /** Click the element bound to this key, if any. Returns true when handled. */
+  handleKeydown(e: KeyboardEvent): boolean {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return false;
+    const target = this.keymap.get(e.key.toLowerCase());
+    if (!target || !target.isConnected) return false;
+    target.click();
+    return true;
+  }
+
+  /** Bind `key` to click `target`; pass `label` to also list it in the hint bar. */
+  private bindKey(key: string, target: HTMLElement, label?: string): void {
+    this.keymap.set(key.toLowerCase(), target);
+    target.setAttribute('aria-keyshortcuts', key);
+    if (label) this.keyHints.push({ keys: [key], label });
+  }
+
+  private resetKeys(): void {
+    this.keymap.clear();
+    this.keyHints = [];
+  }
+
   render(state: GameState, options: RenderOptions = {}): void {
     this.root.innerHTML = '';
+    this.resetKeys();
     const fragment = document.createDocumentFragment();
 
     if (this.currentView === 'HOME') {
@@ -202,7 +232,31 @@ export class Renderer {
       view.appendChild(this.renderGameOverModal(state));
     }
 
+    // Built last so it lists every shortcut bound above.
+    const hints = this.renderKeyHints();
+    if (hints) view.appendChild(hints);
+
     return view;
+  }
+
+  private renderKeyHints(): HTMLElement | null {
+    if (this.keyHints.length === 0) return null;
+    const wrap = el('div', 'key-hints');
+    const bar = el('div', 'key-hints__bar');
+    for (const hint of this.keyHints) {
+      const item = el('span', 'key-hint');
+      for (const key of hint.keys) {
+        const kbd = el('kbd', 'kbd');
+        kbd.textContent = key;
+        item.appendChild(kbd);
+      }
+      const label = el('span', 'key-hint__label');
+      label.textContent = hint.label;
+      item.appendChild(label);
+      bar.appendChild(item);
+    }
+    wrap.appendChild(bar);
+    return wrap;
   }
 
   private renderSeat(state: GameState, seat: Seat, options: RenderOptions, dealCounter: { n: number }): HTMLElement {
@@ -282,6 +336,7 @@ export class Renderer {
           if (isLegal) {
             const idx = i;
             cardEl.addEventListener('click', () => this.cb.onCardClick(HUMAN_SEAT, idx));
+            this.bindKey(String(i + 1), cardEl);
           }
         } else if (state.phase === 'discard' && state.discardQueue[0] === HUMAN_SEAT) {
           cardEl.classList.add('is-legal');
@@ -292,10 +347,16 @@ export class Renderer {
             else this.discardSelected.add(idx);
             this.render(state, options);
           });
+          this.bindKey(String(i + 1), cardEl);
         } else if (state.phase !== 'score') {
           cardEl.classList.add('is-legal');
         }
         hand.appendChild(cardEl);
+      }
+      if (state.phase === 'play' && state.toAct === HUMAN_SEAT) {
+        this.keyHints.push({ keys: [cardKeyRange(cards.length)], label: 'Play card' });
+      } else if (state.phase === 'discard' && state.discardQueue[0] === HUMAN_SEAT) {
+        this.keyHints.push({ keys: [cardKeyRange(cards.length)], label: 'Toggle discard' });
       }
     }
 
@@ -440,6 +501,7 @@ export class Renderer {
         const btn = el('button', 'btn is-primary') as HTMLButtonElement;
         btn.textContent = 'Start Game';
         btn.addEventListener('click', () => this.cb.onDealClick());
+        this.bindKey('Enter', btn, 'Start game');
         section.appendChild(btn);
       } else {
         // Subsequent hands deal automatically; no manual button.
@@ -465,6 +527,7 @@ export class Renderer {
             if (opt === 30) btn.classList.add('is-primary');
           }
           btn.addEventListener('click', () => this.cb.onBidClick(opt));
+          this.bindKey(BID_KEYS[opt], btn, btn.textContent);
           row.appendChild(btn);
         }
         section.appendChild(row);
@@ -490,6 +553,7 @@ export class Renderer {
           this.discardSelected.clear();
           this.cb.onDiscardConfirm(HUMAN_SEAT, discards);
         });
+        this.bindKey('Enter', btn, n === 0 ? 'Keep all' : 'Discard');
         section.appendChild(btn);
       } else {
         sectionTitle.textContent = `${state.seatNames[state.discardQueue[0]!]} discarding…`;
@@ -626,9 +690,11 @@ export class Renderer {
       btn.appendChild(glyph);
       btn.appendChild(lbl);
       btn.addEventListener('click', () => this.cb.onTrumpClick(suit));
+      this.bindKey(suit, btn);
       suitGrid.appendChild(btn);
     }
     inner.appendChild(suitGrid);
+    this.keyHints.push({ keys: ['H', 'D', 'C', 'S'], label: 'Name trump' });
 
     modal.appendChild(inner);
     return modal;
@@ -693,13 +759,16 @@ export class Renderer {
         cardEl.classList.toggle('is-selected', selected.has(i));
         updateButtons();
       });
+      this.bindKey(String(i + 1), cardEl);
       handDiv.appendChild(cardEl);
     });
     inner.appendChild(handDiv);
+    this.keyHints.push({ keys: [cardKeyRange(combined.length)], label: 'Toggle discard' });
     confirmBtn.addEventListener('click', () => {
       const discards = [...selected].map((i) => combined[i]!);
       this.cb.onKittyConfirm(discards);
     });
+    this.bindKey('Enter', confirmBtn, 'Confirm');
     inner.appendChild(confirmBtn);
 
     modal.appendChild(inner);
@@ -757,6 +826,7 @@ export class Renderer {
     const btn = el('button', 'btn is-primary') as HTMLButtonElement;
     btn.textContent = 'Next Hand';
     btn.addEventListener('click', () => this.cb.onScoreClose());
+    this.bindKey('Enter', btn, 'Next hand');
     inner.appendChild(btn);
 
     modal.appendChild(inner);
@@ -798,6 +868,7 @@ export class Renderer {
     const btn = el('button', 'btn is-primary') as HTMLButtonElement;
     btn.textContent = 'Play Again';
     btn.addEventListener('click', () => this.cb.onDealClick());
+    this.bindKey('Enter', btn, 'Play again');
     inner.appendChild(btn);
 
     modal.appendChild(inner);
@@ -836,11 +907,13 @@ export class Renderer {
       const btn1 = el('button', 'btn is-primary') as HTMLButtonElement;
       btn1.textContent = 'Normal';
       btn1.addEventListener('click', () => this.cb.onKittyOptionClick('normal'));
+      this.bindKey('N', btn1, 'Normal');
       row.appendChild(btn1);
 
       const btn2 = el('button', 'btn') as HTMLButtonElement;
       btn2.textContent = 'Bid on the Kitty';
       btn2.addEventListener('click', () => this.cb.onKittyOptionClick('one-card'));
+      this.bindKey('K', btn2, 'Bid on the kitty');
       row.appendChild(btn2);
       inner.appendChild(row);
     } else {
@@ -855,9 +928,11 @@ export class Renderer {
       state.hands[HUMAN_SEAT].forEach((c, i) => {
         const cardEl = cardFace(c);
         cardEl.addEventListener('click', () => this.cb.onKittyKeepClick(i));
+        this.bindKey(String(i + 1), cardEl);
         handDiv.appendChild(cardEl);
       });
       inner.appendChild(handDiv);
+      this.keyHints.push({ keys: [cardKeyRange(state.hands[HUMAN_SEAT].length)], label: 'Keep card' });
     }
 
     modal.appendChild(inner);
@@ -868,7 +943,12 @@ export class Renderer {
     // Replace kitty modal with discard modal.
     const existing = this.root.querySelector('.modal');
     if (existing) existing.remove();
+    // The trump buttons' shortcuts go with the old modal; rebind for the new one.
+    this.resetKeys();
     this.root.appendChild(this.renderTrumpSelectedKittyModal(state, trump));
+    this.root.querySelector('.key-hints')?.remove();
+    const hints = this.renderKeyHints();
+    if (hints) this.root.querySelector('.view--game')?.appendChild(hints);
   }
 
   showToast(message: string, durationMs = 1800): void {
@@ -965,6 +1045,11 @@ function cardBack(): HTMLElement {
   const div = el('div', 'card is-back');
   div.innerHTML = CARD_BACK_SVG;
   return div;
+}
+
+/** Hint-bar label for the number keys that pick a card by position. */
+function cardKeyRange(count: number): string {
+  return count === 1 ? '1' : `1–${count}`;
 }
 
 function phaseLabel(state: GameState): string {

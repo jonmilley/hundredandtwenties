@@ -183,6 +183,12 @@ function handleRouting() {
 window.addEventListener('hashchange', handleRouting);
 handleRouting();
 
+// Keyboard shortcuts click whatever the current render bound to the key.
+// preventDefault stops Enter from also activating a still-focused button.
+window.addEventListener('keydown', (e) => {
+  if (renderer.handleKeydown(e)) e.preventDefault();
+});
+
 // Deal a fresh hand and start bidding. Shared by the manual "Start Game" button
 // and the automatic deal between hands.
 function dealAndStartBidding(): void {

@@ -18,10 +18,12 @@
    * hand span, and the kitty derive from it, so the whole table scales as one.
    * It tracks viewport height (the binding constraint: side hands stack
    * vertically and the south hand must stay on-screen) and is capped by width
-   * on narrow windows. The vh budget leaves ~130px for labels, padding, and
-   * the rail so five rows of content never overflow a short viewport. */
+   * on narrow windows. The vh budget leaves ~140px for labels, padding, and
+   * the rail so five rows of content never overflow a short viewport, plus
+   * the keyboard-hint strip (split across the five rows) where it's shown. */
   --card-ratio: 0.712; /* 84 / 118 */
-  --card-h: clamp(52px, min(calc(20vh - 24px), 14vw), 118px);
+  --hint-strip: 0px;
+  --card-h: clamp(52px, min(calc(20vh - 28px - var(--hint-strip) / 5), 14vw), 118px);
   --card-w: calc(var(--card-h) * var(--card-ratio));
   --card-pad: clamp(2px, 0.35vh, 4px);
   --card-radius: clamp(4px, 0.5vh, 6px);
@@ -32,6 +34,8 @@
   --hand-span-v: calc(var(--card-h) * 2.695); /* 5-card vertical stack */
   --kitty-w: calc(var(--card-w) * 0.714);
   --kitty-h: calc(var(--card-h) * 0.714);
+
+  --panel-w: 320px;
 }
 
 * {
@@ -262,7 +266,7 @@ body {
     '. north .'
     'west center east'
     '. south .';
-  padding: 22px;
+  padding: 22px 22px calc(22px + var(--hint-strip));
   position: relative;
   transform: translateZ(0); /* Force layer */
   /* Felt with subtle knit weave + vignette, inside a leather/wood rail. */
@@ -627,7 +631,7 @@ body {
 /* ---------- Side panel ---------- */
 
 .panel {
-  width: 320px;
+  width: var(--panel-w);
   background:
     linear-gradient(180deg, rgba(14, 30, 22, 0.85), rgba(8, 18, 13, 0.92));
   border-left: 1px solid rgba(212, 164, 55, 0.18);
@@ -1032,6 +1036,59 @@ button.btn.suit-btn:hover:not(:disabled) {
   border: 1px solid var(--panel-stroke);
 }
 
+/* ---------- Keyboard shortcut hints ----------
+ * A bar centred along the bottom of the felt listing the keys that work right
+ * now. It sits in the --hint-strip the table reserves below the south hand.
+ * It lives on .view (not inside .table, whose transform makes a stacking
+ * context) so it can sit above modals, whose buttons it also covers. */
+@media (min-width: 901px) and (min-height: 661px) and (hover: hover) {
+  :root {
+    --hint-strip: 24px;
+  }
+}
+.key-hints {
+  position: absolute;
+  left: 8px; /* .table's left margin */
+  right: var(--panel-w);
+  bottom: 22px; /* .table's bottom margin + rail, plus a little air */
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 25; /* above .modal (20), below .toast (30) */
+}
+.key-hints__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 18px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(6, 16, 11, 0.62);
+  border: 1px solid rgba(212, 164, 55, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+.key-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.key-hint .kbd {
+  min-width: 20px;
+  padding: 1px 6px;
+  text-align: center;
+  line-height: 1.3;
+  color: var(--gold-bright);
+  border-color: rgba(212, 164, 55, 0.35);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+.key-hint__label {
+  margin-left: 3px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 /* ---------- Mobile Responsiveness ---------- */
 
 @media (max-width: 900px) {
@@ -1275,6 +1332,16 @@ button.btn.suit-btn:hover:not(:disabled) {
   .modal__hand .card {
     width: 42px;
     height: 58px;
+  }
+}
+
+/* Shortcut hints are for keyboard users: hide them on the mobile layout and on
+ * touch-first devices. Also hide them on very short windows, where the trick
+ * hub's minimum height leaves no room for the strip under the south hand.
+ * Must mirror the --hint-strip query. The keys themselves still work everywhere. */
+@media (max-width: 900px), (max-height: 660px), (hover: none) {
+  .key-hints {
+    display: none;
   }
 }
 
